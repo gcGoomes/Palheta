@@ -1,0 +1,8 @@
+# Configurações locais do Claude Code (o launch.json do preview fica versionado)
+.claude/settings.local.json
+
+# Cópias temporárias de teste
+.teste-gp/
+
+# Python
+__pycache__/

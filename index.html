@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Guitarra Guiada</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 3l2 2-6.5 6.5"/><path d="M14.5 11.5a4 4 0 0 0-5.6-.4L5 15a3 3 0 0 0 4 4l3.9-3.9a4 4 0 0 0-.4-5.6"/><circle cx="9" cy="15" r="1.2"/></svg>
+      Guitarra Guiada
+    </div>
+    <div class="song-picker">
+      <select id="songSelect" aria-label="Música"></select>
+      <label class="btn">
+        Abrir arquivo
+        <input type="file" id="fileInput" accept=".gp,.gp3,.gp4,.gp5,.gpx,.gp7,.xml,.musicxml,.mxl,.atex,.txt" hidden>
+      </label>
+      <select id="trackSelect" aria-label="Faixa"></select>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="score-col">
+      <div class="transport">
+        <button id="playBtn" class="btn primary" disabled>Carregando som…</button>
+        <button id="stopBtn" class="btn" aria-label="Voltar ao início">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="1.5"/></svg>
+        </button>
+        <div class="speed">
+          <label for="speed">Velocidade</label>
+          <input type="range" id="speed" min="25" max="100" step="5" value="70">
+          <span id="speedOut">70%</span>
+        </div>
+        <label class="toggle"><input type="checkbox" id="metro" checked> Metrônomo</label>
+        <label class="toggle"><input type="checkbox" id="countIn" checked> Contagem antes</label>
+        <label class="toggle"><input type="checkbox" id="loop"> Repetir</label>
+        <label class="toggle challenge"><input type="checkbox" id="challenge"> Desafio de velocidade</label>
+      </div>
+      <details class="mixer" id="mixer">
+        <summary>Volume das faixas <span id="mixSummary"></span></summary>
+        <div class="mix-actions">
+          <button class="btn small" id="mixSolo">Só a minha faixa</button>
+          <button class="btn small" id="mixAll">Banda toda</button>
+        </div>
+        <div id="mixRows" class="mix-rows"></div>
+      </details>
+      <details class="mixer" id="tonePanel">
+        <summary>Timbre da guitarra <span id="toneSummary"></span></summary>
+        <div class="presets" id="presets"></div>
+        <div class="fx">
+          <label for="fx-drive">Distorção</label>
+          <input type="range" id="fx-drive" min="0" max="100" step="1">
+          <span id="fx-drive-out" class="fx-out"></span>
+          <label for="fx-tone">Tom</label>
+          <div class="fx-tone"><small>grave</small><input type="range" id="fx-tone" min="0" max="100" step="1"><small>agudo</small></div>
+          <span class="fx-out"></span>
+          <label for="fx-reverb">Reverb</label>
+          <input type="range" id="fx-reverb" min="0" max="100" step="1">
+          <span id="fx-reverb-out" class="fx-out"></span>
+        </div>
+        <p class="fx-note">Os efeitos valem só para a sua faixa. Para separar a guitarra do resto, a banda toca em mono.</p>
+      </details>
+      <div class="hint">
+        <span id="songTitle"></span>
+        <span class="hint-text">Clique numa nota para ver os detalhes. Arraste sobre a tablatura para treinar só um trecho.</span>
+        <button id="clearRange" class="link" hidden>Limpar trecho</button>
+      </div>
+      <div id="toast" class="toast" hidden></div>
+      <div id="scoreWrap" class="score-wrap">
+        <div id="loading" class="loading">Carregando tablatura…</div>
+        <div id="score"></div>
+      </div>
+    </section>
+
+    <aside class="coach-col">
+      <div class="card coach">
+        <div class="coach-head">
+          <div id="diagram" class="coach-diagram"></div>
+          <div class="coach-info">
+            <div class="coach-kicker" id="coachKicker">Agora</div>
+            <div class="coach-name" id="coachName">–</div>
+            <div class="coach-desc" id="coachDesc"></div>
+            <div class="stroke" id="coachStroke"></div>
+            <div class="coach-count" id="coachCount"></div>
+          </div>
+        </div>
+        <ul class="tips" id="coachTips"></ul>
+        <div class="next" id="coachNext"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h2 id="laneTitle">Batida do compasso</h2>
+          <div class="segmented" role="group" aria-label="Estilo de palhetada">
+            <button data-strategy="pendulum">Pêndulo</button>
+            <button data-strategy="riff">Riff</button>
+          </div>
+        </div>
+        <div id="lane" class="lane"></div>
+        <p class="legend">
+          <span class="lg down">para baixo</span>
+          <span class="lg up">para cima</span>
+          <span class="lg ghost">mão passa sem tocar</span>
+          <span class="lg hold">som continua</span>
+        </p>
+        <p class="strategy-note" id="strategyNote"></p>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h2>Formas desta música</h2></div>
+        <div id="shapes" class="shapes"></div>
+      </div>
+    </aside>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@coderline/alphatab@1.8.4/dist/alphaTab.js" crossorigin="anonymous"></script>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

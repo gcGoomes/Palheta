@@ -1,0 +1,31 @@
+\title "Smoke on the Water"
+\artist "Deep Purple"
+\subtitle "Riff da introdução"
+\tempo 112
+.
+\track "Riff original (quartas nas cordas Ré e Sol)"
+\staff {tabs}
+\tuning E4 B3 G3 D3 A2 E2
+\instrument 29
+\ro (0.4 0.3).4 (3.4 3.3).4 (5.4 5.3).4{d} (0.4 0.3).8 |
+(-.4 -.3).8 (3.4 3.3).4 (6.4 6.3).8 (5.4 5.3).2 |
+(0.4 0.3).4 (3.4 3.3).4 (5.4 5.3).4{d} (3.4 3.3).8 |
+\rc 4 (-.4 -.3).8 (0.4 0.3).2{d} (-.4 -.3).8 |
+
+\track "Versão fácil (uma corda só)"
+\staff {tabs}
+\tuning E4 B3 G3 D3 A2 E2
+\instrument 29
+\ro 0.3.4 3.3.4 5.3.4{d} 0.3.8 |
+-.3.8 3.3.4 6.3.8 5.3.2 |
+0.3.4 3.3.4 5.3.4{d} 3.3.8 |
+\rc 4 -.3.8 0.3.2{d} -.3.8 |
+
+\track "Power chords (cordas Mi e Lá)"
+\staff {tabs}
+\tuning E4 B3 G3 D3 A2 E2
+\instrument 29
+\ro (3.6 5.5).4 (6.6 8.5).4 (8.6 10.5).4{d} (3.6 5.5).8 |
+(-.6 -.5).8 (6.6 8.5).4 (9.6 11.5).8 (8.6 10.5).2 |
+(3.6 5.5).4 (6.6 8.5).4 (8.6 10.5).4{d} (6.6 8.5).8 |
+\rc 4 (-.6 -.5).8 (3.6 5.5).2{d} (-.6 -.5).8 |
