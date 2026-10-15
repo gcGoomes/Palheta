@@ -249,6 +249,43 @@ export function assignFingerings(items, tuning) {
   }
 }
 
+// Dicas para a troca de uma forma para outra: dedo que fica parado (âncora) ou que
+// desliza pela mesma corda (dedo-guia).
+export function changeTips(from, to, strings) {
+  const tips = [];
+  const fa = from.fingering?.fingers ?? {};
+  const fb = to.fingering?.fingers ?? {};
+  const label = (s) => strings[s - 1].label;
+  const done = new Set();
+  for (const nb of to.notes.filter(isFretted)) {
+    const finger = fb[nb.string];
+    if (!finger || done.has(finger)) continue;
+    const na = from.notes.find((n) => isFretted(n) && n.string === nb.string && fa[n.string] === finger);
+    if (!na) continue;
+    done.add(finger);
+    const who = `Dedo ${finger} (${FINGER_NAMES[finger]})`;
+    if (na.fret === nb.fret) {
+      tips.push(`${who} fica parado na ${nb.fret}ª casa da corda ${label(nb.string)}: ele é a âncora da troca, os outros se mexem em volta dele.`);
+    } else {
+      tips.push(`${who} não sai da corda ${label(nb.string)}: só desliza da ${na.fret}ª para a ${nb.fret}ª casa e guia a mão (dedo-guia).`);
+    }
+  }
+  const usesFingers = (it) => Object.keys(it.fingering?.fingers ?? {}).length > 0;
+  const pretty = (it) => it.shape.name.replace(/([A-G])b/g, '$1♭').replace(/#/g, '♯');
+  const fingerCount = (it) => new Set(Object.values(it.fingering?.fingers ?? {})).size;
+  if (!done.size && usesFingers(from) && usesFingers(to) && Math.max(fingerCount(from), fingerCount(to)) > 1) {
+    tips.push('Nenhum dedo se repete: levante todos juntos e pouse a forma nova de uma vez, como um carimbo.');
+  }
+  if (!usesFingers(from) && usesFingers(to)) {
+    // Primeiro dedo a pousar: o de menor número (normalmente o indicador).
+    const fb2 = to.fingering.fingers;
+    const lead = Math.min(...Object.values(fb2));
+    const note = to.notes.find((n) => isFretted(n) && fb2[n.string] === lead);
+    tips.push(`Enquanto o ${pretty(from)} (cordas soltas) soa, a mão esquerda está livre: já leve o dedo ${lead} (${FINGER_NAMES[lead]}) até a ${note.fret}ª casa para o ${pretty(to)} sair no tempo.`);
+  }
+  return tips;
+}
+
 // Dicas em português para montar a forma, comparando com a anterior.
 export function fingeringTips(item, prevItem, strings) {
   const tips = [];

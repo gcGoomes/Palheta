@@ -30,6 +30,16 @@ Precisa de Python (já instalado) e internet (o alphaTab vem de um CDN).
   sua escolha na próxima vez.
 - **Nomes dos acordes:** aparecem acima da tablatura sempre que o acorde muda (se o arquivo já
   traz nomes, eles são mantidos).
+- **Treinar trocas** (no cartão "Formas desta música"): escolha um par de formas que aparecem em
+  sequência na música (ex.: G5 ⇄ B♭5). O metrônomo conta 4 e marca quando trocar; cada rodada tem
+  8 trocas. No fim, diga como foi: "saiu limpo" sobe 5 BPM e pode virar recorde. Passando de
+  120 BPM, o treino passa a trocar mais vezes por compasso. As dicas mostram o dedo que fica parado
+  (âncora) ou que desliza pela corda (dedo-guia).
+- **Seu progresso:** tempo de prática por dia (conta enquanto a música ou o treino tocam), dias
+  seguidos (com pelo menos 1 minuto), os últimos 7 dias e os recordes da música aberta: velocidade
+  numa volta completa (na música inteira ou num trecho com Repetir) e BPM em cada troca. Uma volta só
+  vale se começar no início da música ou do trecho, e conta a menor velocidade usada nela. Fica
+  guardado neste navegador.
 
 ## Como funciona
 
@@ -40,6 +50,8 @@ Precisa de Python (já instalado) e internet (o alphaTab vem de um CDN).
 | `js/fingering.js` | Escolhe os dedos: anotação do arquivo → dicionário de acordes → busca heurística |
 | `js/diagram.js` | Desenha os diagramas de acorde em SVG |
 | `js/tone.js` | Presets de timbre e pedaleira (distorção, tom, reverb) em Web Audio |
+| `js/trainer.js` | Treino de trocas de acordes, com metrônomo próprio |
+| `js/progress.js` | Tempo de prática, dias seguidos e recordes (localStorage) |
 | `songs/*.atex` | Músicas embutidas, escritas em [alphaTex](https://alphatab.net/docs/alphatex/introduction) |
 
 O dedilhado automático testa todas as combinações de dedos para cada forma, pontua cada uma
@@ -53,8 +65,8 @@ pular a mão de um lado para o outro. Para os acordes abertos mais comuns, usa o
 
 ## Observações
 
-- O riff de Smoke on the Water foi transcrito a 112 BPM, com a segunda frase entrando no "e" do 4.
-  Vale conferir de ouvido com a gravação.
+- O riff de Smoke on the Water (112 BPM) foi conferido nota a nota com uma tablatura Guitar Pro da
+  música: mesmas entradas, durações e o "x" abafado no tempo 4.
 - O som vem do banco FluidR3 (licença MIT, 14,5 MB), baixado do CDN na primeira vez e guardado
   no cache do navegador. Se não carregar, o app volta para o banco leve do alphaTab.
 - Para a pedaleira pegar só na sua faixa, o app joga a sua faixa toda para o canal esquerdo e o
@@ -66,6 +78,6 @@ pular a mão de um lado para o outro. Para os acordes abertos mais comuns, usa o
 
 ## Próximas ideias
 
-- Treino de troca de acordes ("quantas trocas de G para C em 1 minuto?") com recorde pessoal.
+- Biblioteca: listar os arquivos de uma pasta e lembrar onde você parou em cada música.
 - Microfone para conferir se a nota tocada está certa.
-- Histórico de prática e progresso por música.
+- Tocar junto com a gravação original (o alphaTab sincroniza a tab com um áudio).

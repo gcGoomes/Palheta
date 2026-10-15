@@ -20,6 +20,7 @@
       </label>
       <select id="trackSelect" aria-label="Faixa"></select>
     </div>
+    <span class="streak" id="streakChip" title="Dias seguidos com pelo menos 1 minuto de prática"></span>
   </header>
 
   <main class="layout">
@@ -110,11 +111,62 @@
       </div>
 
       <div class="card">
-        <div class="card-head"><h2>Formas desta música</h2></div>
+        <div class="card-head">
+          <h2>Formas desta música</h2>
+          <button class="btn small" id="openTrainer">Treinar trocas</button>
+        </div>
         <div id="shapes" class="shapes"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h2>Seu progresso</h2></div>
+        <div class="stats">
+          <div class="stat"><b id="pStreak">0</b><span>dias seguidos</span></div>
+          <div class="stat"><b id="pToday">0 min</b><span>hoje</span></div>
+          <div class="stat"><b id="pSong">0 min</b><span>nesta música</span></div>
+        </div>
+        <div class="week" id="pWeek" aria-label="Minutos praticados nos últimos 7 dias"></div>
+        <ul class="records" id="pRecords"></ul>
       </div>
     </aside>
   </main>
+
+  <dialog id="trainer" class="trainer" aria-labelledby="trTitle">
+    <div class="tr-head">
+      <h2 id="trTitle">Treino de trocas</h2>
+      <button class="btn small" id="trClose">Fechar</button>
+    </div>
+    <div class="presets" id="trPairs"></div>
+    <div id="trStage">
+      <div class="tr-stage">
+        <div class="tr-shape" id="trA"></div>
+        <div class="tr-swap" aria-hidden="true">⇄</div>
+        <div class="tr-shape" id="trB"></div>
+      </div>
+      <div class="tr-beats" id="trBeats"></div>
+      <p class="tr-status" id="trStatus" aria-live="polite"></p>
+      <div class="tr-result" id="trResult" hidden>
+        <button class="btn primary" data-result="clean">Saiu limpo: subir 5 BPM</button>
+        <button class="btn" data-result="again">Quase: repetir</button>
+        <button class="btn" data-result="slower">Difícil: mais devagar</button>
+      </div>
+      <div class="tr-controls">
+        <div class="tr-bpm">
+          <button class="btn small" id="trMinus" aria-label="Mais devagar">−5</button>
+          <span><b id="trBpm">60</b> BPM</span>
+          <button class="btn small" id="trPlus" aria-label="Mais rápido">+5</button>
+        </div>
+        <div class="segmented" id="trEvery" role="group" aria-label="Trocar a cada">
+          <button data-every="4">a cada 4 tempos</button>
+          <button data-every="2">a cada 2</button>
+          <button data-every="1">a cada 1</button>
+        </div>
+        <button class="btn primary" id="trStart">Começar</button>
+      </div>
+      <p class="tr-record" id="trRecord"></p>
+      <ul class="tips" id="trTips"></ul>
+    </div>
+  </dialog>
 
   <script src="https://cdn.jsdelivr.net/npm/@coderline/alphatab@1.8.4/dist/alphaTab.js" crossorigin="anonymous"></script>
   <script type="module" src="js/main.js"></script>

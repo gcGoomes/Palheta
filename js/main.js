@@ -1,6 +1,8 @@
 import { analyzeTrack, annotateChordNames, prettyName } from './analysis.js';
 import { diagramSVG, arrowSVG } from './diagram.js';
 import { PRESETS, createToneEngine, routeMidi } from './tone.js';
+import { createProgress, dayKey, formatMinutes } from './progress.js';
+import { createTrainer } from './trainer.js';
 
 const AT = 'https://cdn.jsdelivr.net/npm/@coderline/alphatab@1.8.4/dist';
 // Banco de sons FluidR3 (licença MIT), o mesmo que o MuseScore 2 usava. 14,5 MB,
@@ -31,7 +33,13 @@ const state = {
   laps: 0,
   mix: [], // por faixa: { volume: 0–1.5, muted: bool }
   preset: 'original',
+  songKey: '',
+  songTitle: '',
+  fileName: '',
+  pass: null, // volta em andamento: { from: tick inicial, speed: menor velocidade usada }
 };
+
+const progress = createProgress();
 
 const api = new alphaTab.AlphaTabApi($('score'), {
   core: { fontDirectory: `${AT}/font/` },
@@ -74,11 +82,13 @@ $('songSelect').addEventListener('change', (e) => {
 async function loadSong(song) {
   showLoading('Carregando tablatura…');
   const res = await fetch(song.file);
+  state.fileName = song.file.split('/').pop();
   api.tex(await res.text(), [0]);
 }
 
 async function loadFile(file) {
   showLoading(`Abrindo ${file.name}…`);
+  state.fileName = file.name;
   if (/\.(atex|txt)$/i.test(file.name)) api.tex(await file.text(), [0]);
   else api.load(new Uint8Array(await file.arrayBuffer()), [0]);
   const sel = $('songSelect');
@@ -130,7 +140,13 @@ api.scoreLoaded.on((score) => {
   } catch (err) {
     console.error('Não consegui escrever os nomes dos acordes', err);
   }
-  $('songTitle').textContent = [score.title, score.artist].filter(Boolean).join(' — ') || 'Sem título';
+  const title = [score.title, score.artist].filter(Boolean).join(' — ');
+  $('songTitle').textContent = title || 'Sem título';
+  state.songTitle = title || state.fileName || 'Sem título';
+  // por arquivo: o riff embutido e um .gp da mesma música têm progresso separado
+  state.songKey = `${score.title}|${score.artist}|${state.fileName}`.toLowerCase();
+  state.pass = null;
+  renderProgress();
   $('trackSelect').innerHTML = score.tracks
     .map((t, i) => {
       const name = escapeHtml(t.name || `Faixa ${i + 1}`);
@@ -467,6 +483,108 @@ $('shapes').addEventListener('click', (e) => {
   if (!state.playing && api.tickCache) api.tickPosition = api.tickCache.getBeatStart(item.beat);
 });
 
+// ---------- treino de trocas e progresso ----------
+
+const trainer = createTrainer({
+  progress,
+  onOpen: () => { if (state.playing) api.pause(); },
+  onRound: () => renderProgress(),
+});
+
+$('openTrainer').addEventListener('click', () => {
+  if (!state.analysis?.ok) {
+    toast('Escolha uma faixa com tablatura para treinar as trocas.');
+    return;
+  }
+  trainer.open(state.analysis, state.songKey, state.songTitle);
+});
+
+// Tempo de prática: conta enquanto a música ou o treino de trocas está tocando.
+setInterval(() => {
+  if (!state.playing && !trainer.running) return;
+  progress.practice(state.songKey, state.songTitle, 1);
+  renderProgress();
+}, 1000);
+
+// Uma "volta" vale para recorde só se começou no início (da música ou do trecho escolhido);
+// a velocidade registrada é a menor usada durante a volta.
+function passStartTick() {
+  return api.playbackRange?.startTick ?? 0;
+}
+
+function startPass(fromTick) {
+  state.pass = { from: fromTick, speed: api.playbackSpeed };
+}
+
+function sectionLabel() {
+  const range = api.playbackRange;
+  const cache = api.tickCache;
+  if (!range || !cache) return null;
+  const tracks = new Set([state.trackIndex]);
+  const first = cache.findBeat(tracks, range.startTick)?.beat;
+  const last = cache.findBeat(tracks, Math.max(range.startTick, range.endTick - 1))?.beat;
+  if (!first || !last) return 'trecho escolhido';
+  const a = first.voice.bar.index + 1;
+  const b = last.voice.bar.index + 1;
+  return a === b ? `compasso ${a}` : `compassos ${a}–${b}`;
+}
+
+function finishPass() {
+  const pass = state.pass;
+  if (!pass || pass.from > passStartTick() + 960) return;
+  const speed = Math.round(pass.speed * 100) / 100;
+  const section = sectionLabel();
+  if (progress.recordSpeed(state.songKey, state.songTitle, speed, section)) {
+    const where = section ? `no trecho (${section})` : 'na música inteira';
+    toast(`Novo recorde ${where}: ${Math.round(speed * 100)}% da velocidade!`);
+  }
+  renderProgress();
+}
+
+function speedText(speed) {
+  const pct = `${Math.round(speed * 100)}%`;
+  return state.score?.tempo ? `${pct} (${Math.round(state.score.tempo * speed)} BPM)` : pct;
+}
+
+function renderProgress() {
+  const streak = progress.streak();
+  $('streakChip').textContent = streak ? `${streak} ${streak === 1 ? 'dia seguido' : 'dias seguidos'}` : 'Comece sua sequência hoje';
+  $('pStreak').textContent = streak;
+  $('pToday').textContent = formatMinutes(progress.secondsOn(dayKey()));
+  const song = progress.songStats(state.songKey);
+  $('pSong').textContent = formatMinutes(song?.seconds ?? 0);
+
+  const days = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    days.push(d);
+  }
+  const secs = days.map((d) => progress.secondsOn(dayKey(d)));
+  const max = Math.max(600, ...secs);
+  $('pWeek').innerHTML = days.map((d, i) => `
+    <div class="day${i === 6 ? ' today' : ''}" title="${d.toLocaleDateString('pt-BR', { weekday: 'long' })}: ${formatMinutes(secs[i])}">
+      <div class="bar${secs[i] >= 60 ? ' on' : ''}" style="height: ${Math.round((secs[i] / max) * 52) + 3}px"></div>
+      <small>${d.toLocaleDateString('pt-BR', { weekday: 'narrow' })}</small>
+    </div>`).join('');
+
+  const rows = [];
+  if (song?.bestFull) rows.push(['Música inteira', speedText(song.bestFull)]);
+  Object.entries(song?.sections ?? {})
+    .sort((x, y) => y[1] - x[1])
+    .slice(0, 3)
+    .forEach(([label, speed]) => rows.push([`Trecho: ${label}`, speedText(speed)]));
+  progress.pairsOf(state.songKey)
+    .sort((x, y) => y.bpm / y.every - x.bpm / x.every)
+    .slice(0, 4)
+    .forEach((p) => rows.push([`Troca ${p.label}`, `${p.bpm} BPM, ${p.every === 1 ? 'a cada tempo' : `a cada ${p.every} tempos`}`]));
+  $('pRecords').innerHTML = rows.length
+    ? rows.map(([a, b]) => `<li><span>${escapeHtml(a)}</span><b>${escapeHtml(b)}</b></li>`).join('')
+    : '<li class="empty">Toque a música (ou um trecho com Repetir) do começo ao fim, ou faça uma rodada limpa no treino de trocas, para marcar seu primeiro recorde.</li>';
+}
+
+renderProgress();
+
 function renderLane(barIndex) {
   const a = state.analysis;
   const bar = a?.ok && a.bars[barIndex];
@@ -521,6 +639,15 @@ api.playerReady.on(() => {
 api.playerStateChanged.on((e) => {
   state.playing = e.state === 1;
   setPlayLabel(state.playing);
+  if (e.stopped) state.pass = null;
+  else if (state.playing && !state.pass) startPass(api.tickPosition);
+});
+
+// Fim da música ou do trecho (com Repetir, dispara a cada volta, antes de voltar ao início).
+api.playerFinished.on(() => {
+  finishPass();
+  state.pass = null;
+  if (state.challenge) onLap();
 });
 
 api.playedBeatChanged.on((beat) => {
@@ -537,12 +664,19 @@ api.playerPositionChanged.on((e) => {
     if (performance.now() > seek.until) state.pendingSeek = null;
     else if (tick < seek.tick - 10) {
       state.pendingSeek = null;
+      state.restoringSeek = true;
       state.lastTick = seek.tick;
       api.tickPosition = seek.tick;
       return;
     }
   }
-  if (state.challenge && state.playing && tick < state.lastTick - 960) onLap();
+  // Qualquer pulo (clique na partitura, volta do Repetir) começa uma volta nova,
+  // menos a posição que o próprio app restaura depois de refazer a MIDI.
+  if (e.isSeek) {
+    if (state.restoringSeek) state.restoringSeek = false;
+    else if (state.playing) startPass(tick);
+    else state.pass = null;
+  }
   state.lastTick = tick;
   if (!state.analysis?.ok || !api.tickCache) return;
   const res = api.tickCache.findBeat(new Set([state.trackIndex]), tick, state.findHint);
@@ -586,6 +720,7 @@ $('playBtn').addEventListener('click', () => api.playPause());
 $('stopBtn').addEventListener('click', () => api.stop());
 $('speed').addEventListener('input', () => {
   api.playbackSpeed = +$('speed').value / 100;
+  if (state.pass) state.pass.speed = Math.min(state.pass.speed, api.playbackSpeed);
   updateSpeedLabel();
 });
 $('metro').addEventListener('change', applyTransport);
@@ -623,10 +758,12 @@ function onLap() {
 
 let toastTimer = null;
 function toast(text) {
-  $('toast').textContent = text;
-  $('toast').hidden = false;
+  const el = $('toast');
+  // dois avisos ao mesmo tempo (ex.: recorde + desafio) aparecem juntos
+  el.textContent = el.hidden ? text : `${el.textContent} · ${text}`;
+  el.hidden = false;
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => { $('toast').hidden = true; }, 3000);
+  toastTimer = setTimeout(() => { el.hidden = true; }, 3500);
 }
 
 loadSong(SONGS[0]);
