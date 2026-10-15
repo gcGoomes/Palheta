@@ -2,14 +2,15 @@
 // (velocidade numa volta completa e BPM nas trocas de acorde). Fica no localStorage
 // deste navegador; se ele não estiver disponível, o app funciona igual, só não lembra.
 
-const KEY = 'guitarra-guiada:progresso';
+const KEY = 'palheta:progresso';
+const OLD_KEY = 'guitarra-guiada:progresso'; // nome antigo do app
 const SAVE_EVERY_MS = 15000;
 
 export const dayKey = (date = new Date()) => date.toLocaleDateString('sv'); // AAAA-MM-DD local
 
 function load() {
   try {
-    const data = JSON.parse(localStorage.getItem(KEY) ?? 'null');
+    const data = JSON.parse(localStorage.getItem(KEY) ?? localStorage.getItem(OLD_KEY) ?? 'null');
     if (data && data.days && data.songs && data.pairs) return data;
   } catch {
     // dado corrompido ou armazenamento bloqueado: começa do zero
@@ -26,6 +27,7 @@ export function createProgress() {
     if (!dirty) return;
     try {
       localStorage.setItem(KEY, JSON.stringify(data));
+      localStorage.removeItem(OLD_KEY);
     } catch {
       // sem armazenamento: segue sem lembrar
     }

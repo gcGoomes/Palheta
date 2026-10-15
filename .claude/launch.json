@@ -2,7 +2,7 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "guitarra-guiada",
+      "name": "palheta",
       "runtimeExecutable": "py",
       "runtimeArgs": ["servidor.py", "8000"],
       "port": 8000

@@ -1,4 +1,4 @@
-# Guitarra Guiada
+# Palheta
 
 Um "professor de bolso" para tablaturas: toca a música e, a cada nota ou acorde, mostra
 **qual dedo vai em cada corda**, **se a palhetada é para baixo ou para cima**, **em que contagem
@@ -74,7 +74,8 @@ pular a mão de um lado para o outro. Para os acordes abertos mais comuns, usa o
   dois no centro. Por isso a banda toca em mono.
 - O alphaTab 1.8.4 tem um bug: assinar o evento `midiLoaded` trava a página em recursão infinita.
   O app evita esse evento (veja o comentário em `js/main.js`).
-- Pelo console do navegador dá para inspecionar o app com `guitarra.api` e `guitarra.state`.
+- Pelo console do navegador dá para inspecionar o app com `palheta.api`, `palheta.state` e
+  `palheta.tone.levels()` (volume de cada lado da separação guitarra/banda).
 
 ## Próximas ideias
 

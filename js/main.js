@@ -54,8 +54,8 @@ const api = new alphaTab.AlphaTabApi($('score'), {
   },
 });
 
-// Para inspecionar pelo console do navegador: guitarra.api, guitarra.state, guitarra.tone
-window.guitarra = { api, state, tone };
+// Para inspecionar pelo console do navegador: palheta.api, palheta.state, palheta.tone
+window.palheta = { api, state, tone };
 
 // O alphaTab nem sempre percebe quando a área da partitura muda de largura
 // (janela minimizada, painel redimensionado); redesenha quando isso acontece.
@@ -307,7 +307,8 @@ function regenerateMidi() {
   setTimeout(() => { if (!state.playing) api.play(); }, 800);
 }
 
-const TONE_KEY = 'guitarra-guiada:timbre';
+const TONE_KEY = 'palheta:timbre';
+const OLD_TONE_KEY = 'guitarra-guiada:timbre'; // nome antigo do app
 
 function renderTonePanel() {
   $('presets').innerHTML = Object.entries(PRESETS)
@@ -327,6 +328,7 @@ function updateToneSummary() {
   $('fx-reverb-out').textContent = tone.params.reverb === 0 ? 'desligado' : `${tone.params.reverb}%`;
   try {
     localStorage.setItem(TONE_KEY, JSON.stringify({ preset: state.preset, ...tone.params }));
+    localStorage.removeItem(OLD_TONE_KEY);
   } catch {
     // sem armazenamento local: só não lembra na próxima vez
   }
@@ -354,7 +356,7 @@ for (const key of ['drive', 'tone', 'reverb']) {
 }
 
 try {
-  const saved = JSON.parse(localStorage.getItem(TONE_KEY) ?? 'null');
+  const saved = JSON.parse(localStorage.getItem(TONE_KEY) ?? localStorage.getItem(OLD_TONE_KEY) ?? 'null');
   if (saved && PRESETS[saved.preset]) {
     state.preset = saved.preset;
     tone.set({ drive: saved.drive, tone: saved.tone, reverb: saved.reverb });

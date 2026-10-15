@@ -93,7 +93,7 @@ export function buildChain(ctx) {
 
   merge.connect(output);
 
-  // medidores para conferir a separação (guitarra.tone.levels() no console)
+  // medidores para conferir a separação (palheta.tone.levels() no console)
   const meterGuitar = ctx.createAnalyser();
   const meterBand = ctx.createAnalyser();
   split.connect(meterGuitar, 0);
