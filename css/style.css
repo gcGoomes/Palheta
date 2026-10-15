@@ -247,9 +247,46 @@ select {
 .tr-bpm b { font-size: 20px; }
 .tr-record { text-align: center; font-size: 13px; color: var(--muted); margin: 4px 0 0; }
 
+.lane-actions { display: flex; justify-content: flex-end; margin-top: 10px; }
+.coach-diagram svg, .tr-shape svg { max-width: 100%; height: auto; }
+
+/* tablet em pé e celular: uma coluna, partitura em cima e professor embaixo */
 @media (max-width: 960px) {
-  .layout { grid-template-columns: 1fr; height: auto; }
-  .score-wrap { height: 60vh; flex: none; }
+  .layout { grid-template-columns: 1fr; height: auto; padding: 12px; gap: 12px; }
+  .score-wrap { height: clamp(300px, 40vh, 520px); flex: none; }
   .coach-col { overflow: visible; }
-  .topbar { height: auto; flex-wrap: wrap; padding: 10px 16px; }
+  .topbar { height: auto; flex-wrap: wrap; padding: 10px 12px; gap: 10px; }
+  .song-picker { order: 2; width: 100%; }
+  .song-picker select { flex: 1; min-width: 0; max-width: none; }
+}
+
+/* celular */
+@media (max-width: 560px) {
+  .hint-text { display: none; }
+  .coach-head { grid-template-columns: 1fr; justify-items: center; text-align: center; }
+  .coach-info { display: flex; flex-direction: column; align-items: center; }
+  .speed input { width: 100px; }
+  .tr-stage { grid-template-columns: 1fr 1fr; }
+  .tr-swap { display: none; }
+  .tr-shape b { font-size: 22px; }
+  .trainer { padding: 14px; }
+  .fx { grid-template-columns: 70px minmax(0, 1fr) 64px; }
+  .mix-rows { grid-template-columns: 1fr; }
+  .mix-row { grid-template-columns: 28px minmax(0, 1fr) 90px 40px; }
+}
+
+/* telas de toque: alvos maiores e sem o atraso do duplo toque */
+@media (pointer: coarse) {
+  button, select, input, summary, .cell, .shape, .preset { touch-action: manipulation; }
+  .btn, select { height: 44px; }
+  .btn.small { height: 40px; }
+  .preset { height: 40px; padding: 0 14px; }
+  .segmented button { padding: 10px 12px; }
+  .toggle { padding: 6px 0; }
+  .toggle input { width: 20px; height: 20px; }
+  input[type=range] { height: 32px; }
+  .mixer summary { padding: 6px 0; }
+  .mix-mute { width: 40px; height: 40px; }
+  .mix-row { grid-template-columns: 40px minmax(0, 1fr) 110px 40px; }
+  .cell { padding: 10px 0 8px; }
 }

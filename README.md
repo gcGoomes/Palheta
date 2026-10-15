@@ -6,16 +6,27 @@ ela entra** ("1 e 2 e…") e **quanto tempo dura**.
 
 ## Como rodar
 
-Precisa de Python (já instalado) e internet (o alphaTab vem de um CDN).
+**Pelo link, sem instalar nada** (PC, celular ou tablet): https://gcgoomes.github.io/Palheta/
+(funciona depois que o GitHub Pages estiver ligado, veja abaixo).
 
-- Dê dois cliques em `iniciar.bat`, ou
+**No próprio PC:** precisa de Python e internet (o alphaTab vem de um CDN).
+
+- Dê dois cliques em `iniciar.bat` (usa o `py` ou o `python`, o que existir), ou
 - no terminal, dentro desta pasta: `py servidor.py` e abra http://localhost:8000
+
+### Publicar no GitHub Pages
+
+O app é só HTML, CSS e JavaScript, então o GitHub pode hospedá-lo de graça. No plano gratuito,
+o repositório precisa ser público. Em **Settings → Pages**, escolha **Deploy from a branch**,
+branch **main**, pasta **/(root)**, e salve. Cada `git push` no `main` atualiza o site em 1 ou 2
+minutos. O arquivo `.nojekyll` faz o GitHub servir os arquivos como estão.
 
 ## Como usar
 
 - **Tocar / Velocidade:** comece devagar (60–70%) com o metrônomo ligado.
 - **Clique numa nota** da tablatura para ver os detalhes dela no painel.
 - **Arraste sobre a tablatura** para escolher um trecho e marque **Repetir** para treiná-lo em loop.
+  No celular, use **Repetir este compasso** (abaixo da faixa de batida).
 - **Desafio de velocidade:** começa em 50% e sobe 5% a cada volta completa, até a velocidade original.
 - **Pêndulo / Riff:** dois jeitos de decidir a palhetada.
   - *Pêndulo*: a mão nunca para. Desce nos tempos e sobe nos "e". Ideal para batida de acordes.

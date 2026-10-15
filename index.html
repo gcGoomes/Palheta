@@ -67,7 +67,7 @@
       </details>
       <div class="hint">
         <span id="songTitle"></span>
-        <span class="hint-text">Clique numa nota para ver os detalhes. Arraste sobre a tablatura para treinar só um trecho.</span>
+        <span class="hint-text">Toque numa nota para ver os detalhes. Para treinar só um trecho, arraste sobre a tablatura ou use "Repetir este compasso".</span>
         <button id="clearRange" class="link" hidden>Limpar trecho</button>
       </div>
       <div id="toast" class="toast" hidden></div>
@@ -102,6 +102,9 @@
           </div>
         </div>
         <div id="lane" class="lane"></div>
+        <div class="lane-actions">
+          <button class="btn small" id="loopBar">Repetir este compasso</button>
+        </div>
         <p class="legend">
           <span class="lg down">para baixo</span>
           <span class="lg up">para cima</span>

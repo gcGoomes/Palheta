@@ -728,6 +728,23 @@ $('speed').addEventListener('input', () => {
 $('metro').addEventListener('change', applyTransport);
 $('countIn').addEventListener('change', applyTransport);
 $('loop').addEventListener('change', applyTransport);
+// Repete o compasso mostrado na faixa de batida (arrastar na tablatura é difícil no celular).
+$('loopBar').addEventListener('click', () => {
+  const bar = state.analysis?.ok && state.analysis.bars[state.laneBar];
+  const cache = api.tickCache;
+  if (!bar || !bar.beats.length || !cache) return;
+  const first = bar.beats[0];
+  const last = bar.beats[bar.beats.length - 1];
+  const start = cache.getBeatStart(first);
+  api.playbackRange = { startTick: start, endTick: cache.getBeatStart(last) + last.playbackDuration };
+  api.highlightPlaybackRange(first, last);
+  $('loop').checked = true;
+  applyTransport();
+  $('clearRange').hidden = false;
+  if (!state.playing) api.tickPosition = start;
+  toast(`Repetindo o compasso ${state.laneBar + 1}`);
+});
+
 $('clearRange').addEventListener('click', () => {
   api.playbackRange = null;
   api.clearPlaybackRangeHighlight();
