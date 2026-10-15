@@ -1,0 +1,2 @@
+# Scripts .bat ficam sempre com quebra de linha do Windows (CRLF), inclusive no ZIP do GitHub
+*.bat -text
