@@ -1,2 +1,6 @@
 # Scripts .bat ficam sempre com quebra de linha do Windows (CRLF), inclusive no ZIP do GitHub
 *.bat -text
+
+# Bancos de sons são binários
+*.sf2 binary
+*.sf3 binary

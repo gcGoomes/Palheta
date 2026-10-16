@@ -39,6 +39,8 @@ minutos. O arquivo `.nojekyll` faz o GitHub servir os arquivos como estão.
 - **Timbre da guitarra:** presets (Original, Violão, Limpo, Crunch, Distorção, Pesado) e ajustes
   de distorção, tom (grave ↔ agudo) e reverb. Os efeitos pegam só na sua faixa; o app lembra a
   sua escolha na próxima vez.
+- **Banco de sons** (no painel de timbre): FluidR3, GeneralUser GS ou Sonivox. Troque com a música
+  tocando para comparar; o volume da guitarra é igualado entre os bancos para a comparação ser justa.
 - **Nomes dos acordes:** aparecem acima da tablatura sempre que o acorde muda (se o arquivo já
   traz nomes, eles são mantidos).
 - **Treinar trocas** (no cartão "Formas desta música"): escolha um par de formas que aparecem em
@@ -78,8 +80,12 @@ pular a mão de um lado para o outro. Para os acordes abertos mais comuns, usa o
 
 - O riff de Smoke on the Water (112 BPM) foi conferido nota a nota com uma tablatura Guitar Pro da
   música: mesmas entradas, durações e o "x" abafado no tempo 4.
-- O som vem do banco FluidR3 (licença MIT, 14,5 MB), baixado do CDN na primeira vez e guardado
-  no cache do navegador. Se não carregar, o app volta para o banco leve do alphaTab.
+- Bancos de sons:
+  - **FluidR3** (licença MIT, 14,5 MB): vem do CDN do jsDelivr (cópia do repositório do MuseScore).
+  - **GeneralUser GS 2.0.3** (32 MB), de S. Christian Collins: cópia local em `sons/`, junto com a
+    licença. O autor permite o uso em projetos, mas pede que sites usem uma cópia própria em vez de
+    apontar para os arquivos dele.
+  - **Sonivox** (1,3 MB): vem com o alphaTab. Se o banco escolhido não carregar, o app usa este.
 - Para a pedaleira pegar só na sua faixa, o app joga a sua faixa toda para o canal esquerdo e o
   resto (banda e metrônomo) para o direito antes de tocar, aplica os efeitos no esquerdo e soma os
   dois no centro. Por isso a banda toca em mono.

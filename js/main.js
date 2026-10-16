@@ -5,13 +5,31 @@ import { createProgress, dayKey, formatMinutes } from './progress.js';
 import { createTrainer } from './trainer.js';
 
 const AT = 'https://cdn.jsdelivr.net/npm/@coderline/alphatab@1.8.4/dist';
-// Banco de sons FluidR3 (licença MIT), o mesmo que o MuseScore 2 usava. 14,5 MB,
-// baixado uma vez e guardado no cache do navegador. Se falhar, volta para o sonivox.
-const SOUNDFONT = 'https://cdn.jsdelivr.net/gh/musescore/MuseScore@2.3.2/share/sound/FluidR3Mono_GM.sf3';
-const SOUNDFONT_FALLBACK = `${AT}/soundfont/sonivox.sf2`;
+// Bancos de sons para escolher no painel de timbre. O navegador baixa uma vez e guarda em cache.
+// - FluidR3 (MIT): o que o MuseScore 2 usava, servido pelo jsDelivr.
+// - GeneralUser GS 2.0.3: cópia local em sons/, como o autor pede para sites (licença em sons/).
+// - Sonivox: o banco leve que vem com o alphaTab; também é o reserva quando outro falha.
+// trim: ganho que iguala o volume da guitarra entre os bancos (medido com o riff embutido),
+// para a comparação de ouvido ser justa.
+const BANKS = {
+  fluid: { label: 'FluidR3', size: '14 MB', trim: 1, url: 'https://cdn.jsdelivr.net/gh/musescore/MuseScore@2.3.2/share/sound/FluidR3Mono_GM.sf3' },
+  generaluser: { label: 'GeneralUser GS', size: '32 MB', trim: 0.59, url: new URL('sons/GeneralUser-GS.sf2', location.href).href },
+  sonivox: { label: 'Sonivox', size: '1 MB', trim: 0.26, url: `${AT}/soundfont/sonivox.sf2` },
+};
+const BANK_KEY = 'palheta:banco';
+
+function savedBank() {
+  try {
+    const id = localStorage.getItem(BANK_KEY);
+    return BANKS[id] ? id : 'fluid';
+  } catch {
+    return 'fluid';
+  }
+}
 
 // Precisa existir antes do primeiro "Tocar": desvia a saída do alphaTab para a pedaleira.
 const tone = createToneEngine();
+tone.setTrim(BANKS[savedBank()].trim);
 const SONGS = [
   { title: 'Smoke on the Water — Deep Purple (riff)', file: 'songs/smoke-on-the-water.atex' },
 ];
@@ -33,6 +51,8 @@ const state = {
   laps: 0,
   mix: [], // por faixa: { volume: 0–1.5, muted: bool }
   preset: 'original',
+  bank: savedBank(),
+  bankLoading: null, // troca em andamento: { target, previous }
   songKey: '',
   songTitle: '',
   fileName: '',
@@ -47,7 +67,7 @@ const api = new alphaTab.AlphaTabApi($('score'), {
   notation: { rhythmMode: 'ShowWithBars' },
   player: {
     playerMode: 'EnabledSynthesizer',
-    soundFont: SOUNDFONT,
+    soundFont: BANKS[state.bank].url,
     scrollElement: $('scoreWrap'),
     enableCursor: true,
     enableUserInteraction: true,
@@ -117,12 +137,27 @@ function showLoading(text) {
 let soundFontFallbackUsed = false;
 api.error.on((err) => {
   console.error(err);
-  // Falha antes do tocador ficar pronto e falando do banco de sons: usa o sonivox.
-  const aboutSoundFont = /sound ?font|\.sf[23]/i.test(`${err?.message ?? ''} ${err?.stack ?? ''}`);
-  if (!soundFontFallbackUsed && !api.isReadyForPlayback && aboutSoundFont) {
+  // Troca de banco que falhou: o banco anterior continua carregado no tocador.
+  if (state.bankLoading) {
+    const { target, previous } = state.bankLoading;
+    state.bankLoading = null;
+    state.bank = previous;
+    renderBanks(`Não consegui carregar o ${BANKS[target].label}; continua o ${BANKS[previous].label}.`);
+    $('playBtn').disabled = false;
+    setPlayLabel(state.playing);
+    return;
+  }
+  // Banco inicial que não carregou (antes do tocador ficar pronto): usa o Sonivox.
+  const text = `${err?.constructor?.name ?? ''} ${err?.message ?? ''} ${err?.stack ?? ''}`;
+  const aboutSoundFont = /FileLoadError|sound ?font|\.sf[23]|riff|hydra/i.test(text);
+  if (!soundFontFallbackUsed && !api.isReadyForPlayback && aboutSoundFont && state.bank !== 'sonivox') {
     soundFontFallbackUsed = true;
-    console.warn('Banco de sons FluidR3 indisponível, usando o sonivox');
-    api.loadSoundFontFromUrl(SOUNDFONT_FALLBACK, false);
+    console.warn(`Banco ${BANKS[state.bank].label} indisponível, usando o Sonivox`);
+    const failed = BANKS[state.bank].label;
+    state.bank = 'sonivox';
+    tone.setTrim(BANKS.sonivox.trim);
+    renderBanks(`O ${failed} não carregou; usando o Sonivox.`);
+    api.loadSoundFontFromUrl(BANKS.sonivox.url, false);
     return;
   }
   showLoading(`Não consegui abrir essa música. ${err?.message ?? ''}`);
@@ -366,6 +401,48 @@ try {
 }
 renderTonePanel();
 
+// ---------- banco de sons ----------
+
+function renderBanks(status = '') {
+  $('banks').innerHTML = Object.entries(BANKS)
+    .map(([id, b]) => `<button class="${id === state.bank ? 'active' : ''}" data-bank="${id}">${b.label} <small>${b.size}</small></button>`)
+    .join('');
+  $('bankStatus').textContent = status;
+}
+
+function chooseBank(id) {
+  if (id === state.bank || state.bankLoading || !BANKS[id]) return;
+  state.bankLoading = { target: id, previous: state.bank, wasPlaying: state.playing };
+  state.bank = id;
+  renderBanks(`Carregando ${BANKS[id].label}…`);
+  $('playBtn').disabled = true;
+  api.loadSoundFontFromUrl(BANKS[id].url, false);
+}
+
+// Chamado quando o tocador fica pronto de novo depois de trocar de banco.
+function finishBankChange() {
+  const done = state.bankLoading;
+  state.bankLoading = null;
+  try {
+    localStorage.setItem(BANK_KEY, state.bank);
+  } catch {
+    // sem armazenamento: só não lembra na próxima vez
+  }
+  renderBanks();
+  tone.setTrim(BANKS[state.bank].trim);
+  toast(`Banco de sons: ${BANKS[state.bank].label}`);
+  // Refaz a MIDI para cada faixa pegar o instrumento certo no banco novo.
+  regenerateMidi();
+  if (done.wasPlaying) setTimeout(() => api.play(), 50);
+}
+
+$('banks').addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-bank]');
+  if (btn) chooseBank(btn.dataset.bank);
+});
+
+renderBanks();
+
 // ---------- análise e painel do professor ----------
 
 function analyze() {
@@ -381,7 +458,7 @@ function analyze() {
   state.laneBar = -1;
   state.findHint = null;
 
-  document.querySelectorAll('.segmented button').forEach((b) => {
+  document.querySelectorAll('button[data-strategy]').forEach((b) => {
     b.classList.toggle('active', a.ok && b.dataset.strategy === a.strategy);
   });
 
@@ -416,7 +493,7 @@ function analyze() {
   }
 }
 
-document.querySelectorAll('.segmented button').forEach((b) => {
+document.querySelectorAll('button[data-strategy]').forEach((b) => {
   b.addEventListener('click', () => {
     state.strategy = b.dataset.strategy;
     const shown = state.shownBeat;
@@ -626,7 +703,10 @@ function markCell(barIndex, tickInBar) {
 // ---------- tocador ----------
 
 api.soundFontLoad.on((e) => {
-  if (e.total) $('playBtn').textContent = `Carregando som… ${Math.round((e.loaded / e.total) * 100)}%`;
+  if (!e.total) return;
+  const pct = Math.round((e.loaded / e.total) * 100);
+  $('playBtn').textContent = `Carregando som… ${pct}%`;
+  if (state.bankLoading) $('bankStatus').textContent = `Carregando ${BANKS[state.bankLoading.target].label}… ${pct}%`;
 });
 
 api.playerReady.on(() => {
@@ -634,6 +714,7 @@ api.playerReady.on(() => {
   setPlayLabel(false);
   applyTransport();
   applyMix();
+  if (state.bankLoading) finishBankChange();
 });
 // Não assinar api.midiLoaded: no alphaTab 1.8.4 isso entra em recursão infinita
 // (o getter loadedMidiInfo do sintetizador em worker chama a si mesmo).

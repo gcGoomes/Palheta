@@ -93,6 +93,10 @@ select {
 .mix-row.muted .mix-mute { background: var(--ink); color: #fff; border-color: var(--ink); }
 
 /* timbre */
+.banks { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 10px; font-size: 13px; }
+.banks-label { font-weight: 600; }
+.banks .segmented button small { color: var(--muted); font-size: 11px; }
+.banks .segmented button.active small { color: #d6d0c3; }
 .presets { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
 .preset { height: 30px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--line-strong); background: var(--surface); cursor: pointer; font-size: 13px; }
 .preset:hover { background: #faf8f4; }

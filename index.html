@@ -51,6 +51,11 @@
       </details>
       <details class="mixer" id="tonePanel">
         <summary>Timbre da guitarra <span id="toneSummary"></span></summary>
+        <div class="banks">
+          <span class="banks-label">Banco de sons</span>
+          <div class="segmented" id="banks" role="group" aria-label="Banco de sons"></div>
+          <span class="fx-out" id="bankStatus" aria-live="polite"></span>
+        </div>
         <div class="presets" id="presets"></div>
         <div class="fx">
           <label for="fx-drive">Distorção</label>

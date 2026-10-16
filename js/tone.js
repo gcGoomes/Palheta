@@ -73,7 +73,11 @@ export function buildChain(ctx) {
   const makeup = ctx.createGain();
   const guitar = ctx.createGain();
   guitar.gain.value = SIDE_GAIN;
-  split.connect(shaper, 0);
+  // Cada banco de sons tem um volume próprio; o trim iguala a guitarra entre eles
+  // (antes da distorção, para ela reagir igual em qualquer banco).
+  const trim = ctx.createGain();
+  split.connect(trim, 0);
+  trim.connect(shaper);
   shaper.connect(highpass).connect(low).connect(high).connect(cabinet).connect(makeup).connect(guitar);
   guitar.connect(merge, 0, 0);
   guitar.connect(merge, 0, 1);
@@ -96,10 +100,12 @@ export function buildChain(ctx) {
   // medidores para conferir a separação (palheta.tone.levels() no console)
   const meterGuitar = ctx.createAnalyser();
   const meterBand = ctx.createAnalyser();
+  const meterTrimmed = ctx.createAnalyser();
   split.connect(meterGuitar, 0);
   split.connect(meterBand, 1);
+  trim.connect(meterTrimmed);
 
-  return { input, output, shaper, cabinet, low, high, makeup, wet, meterGuitar, meterBand, context: ctx };
+  return { input, output, trim, shaper, cabinet, low, high, makeup, wet, meterGuitar, meterBand, meterTrimmed, context: ctx };
 }
 
 export function applyParams(chain, { drive, tone, reverb }) {
@@ -116,6 +122,7 @@ export function applyParams(chain, { drive, tone, reverb }) {
 export function createToneEngine() {
   const params = { drive: PRESETS.original.drive, tone: PRESETS.original.tone, reverb: PRESETS.original.reverb };
   const chains = new Map();
+  let trim = 1;
 
   // O alphaTab cria o nó de áudio a cada "Tocar" e o liga direto nos alto-falantes;
   // aqui essa ligação é desviada para a entrada da pedaleira.
@@ -128,6 +135,7 @@ export function createToneEngine() {
         chain = buildChain(this.context);
         nativeConnect.call(chain.output, this.context.destination);
         applyParams(chain, params);
+        chain.trim.gain.value = trim;
         chains.set(this.context, chain);
       }
       return nativeConnect.call(this, chain.input, ...rest);
@@ -141,6 +149,11 @@ export function createToneEngine() {
       Object.assign(params, values);
       for (const chain of chains.values()) applyParams(chain, params);
     },
+    // Ganho de entrada da guitarra para igualar bancos de sons com volumes diferentes.
+    setTrim(value) {
+      trim = value;
+      for (const chain of chains.values()) chain.trim.gain.setTargetAtTime(value, chain.context.currentTime, 0.05);
+    },
     // Volume (RMS) de cada lado agora, para conferir que a guitarra está isolada.
     levels() {
       const rms = (analyser) => {
@@ -149,7 +162,9 @@ export function createToneEngine() {
         return Math.sqrt(data.reduce((s, v) => s + v * v, 0) / data.length);
       };
       const chain = [...chains.values()][0];
-      return chain ? { guitarra: rms(chain.meterGuitar), banda: rms(chain.meterBand) } : null;
+      return chain
+        ? { guitarra: rms(chain.meterGuitar), banda: rms(chain.meterBand), guitarraAjustada: rms(chain.meterTrimmed) }
+        : null;
     },
   };
 }
