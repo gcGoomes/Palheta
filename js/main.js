@@ -7,12 +7,15 @@ import { createTrainer } from './trainer.js';
 const AT = 'https://cdn.jsdelivr.net/npm/@coderline/alphatab@1.8.4/dist';
 // Bancos de sons para escolher no painel de timbre. O navegador baixa uma vez e guarda em cache.
 // - FluidR3 (MIT): o que o MuseScore 2 usava, servido pelo jsDelivr.
+// - MuseScore General 0.2 (MIT): o do MuseScore 3, derivado do FluidR3; cópia local em sons/,
+//   porque o servidor oficial não libera o download por outro site (licença e créditos em sons/).
 // - GeneralUser GS 2.0.3: cópia local em sons/, como o autor pede para sites (licença em sons/).
 // - Sonivox: o banco leve que vem com o alphaTab; também é o reserva quando outro falha.
 // trim: ganho que iguala o volume da guitarra entre os bancos (medido com o riff embutido),
 // para a comparação de ouvido ser justa.
 const BANKS = {
   fluid: { label: 'FluidR3', size: '14 MB', trim: 1, url: 'https://cdn.jsdelivr.net/gh/musescore/MuseScore@2.3.2/share/sound/FluidR3Mono_GM.sf3' },
+  musescore: { label: 'MuseScore General', size: '40 MB', trim: 1, url: new URL('sons/MuseScore_General.sf3', location.href).href },
   generaluser: { label: 'GeneralUser GS', size: '32 MB', trim: 0.59, url: new URL('sons/GeneralUser-GS.sf2', location.href).href },
   sonivox: { label: 'Sonivox', size: '1 MB', trim: 0.26, url: `${AT}/soundfont/sonivox.sf2` },
 };

@@ -39,8 +39,9 @@ minutos. O arquivo `.nojekyll` faz o GitHub servir os arquivos como estão.
 - **Timbre da guitarra:** presets (Original, Violão, Limpo, Crunch, Distorção, Pesado) e ajustes
   de distorção, tom (grave ↔ agudo) e reverb. Os efeitos pegam só na sua faixa; o app lembra a
   sua escolha na próxima vez.
-- **Banco de sons** (no painel de timbre): FluidR3, GeneralUser GS ou Sonivox. Troque com a música
-  tocando para comparar; o volume da guitarra é igualado entre os bancos para a comparação ser justa.
+- **Banco de sons** (no painel de timbre): FluidR3, MuseScore General, GeneralUser GS ou Sonivox.
+  Troque com a música tocando para comparar; o volume da guitarra é igualado entre os bancos para a
+  comparação ser justa.
 - **Nomes dos acordes:** aparecem acima da tablatura sempre que o acorde muda (se o arquivo já
   traz nomes, eles são mantidos).
 - **Treinar trocas** (no cartão "Formas desta música"): escolha um par de formas que aparecem em
@@ -82,6 +83,9 @@ pular a mão de um lado para o outro. Para os acordes abertos mais comuns, usa o
   música: mesmas entradas, durações e o "x" abafado no tempo 4.
 - Bancos de sons:
   - **FluidR3** (licença MIT, 14,5 MB): vem do CDN do jsDelivr (cópia do repositório do MuseScore).
+  - **MuseScore General 0.2** (licença MIT, 40 MB): o banco do MuseScore 3, derivado do FluidR3.
+    Cópia local em `sons/` com os créditos (o servidor oficial não libera o download por outro site).
+    As guitarras usam as mesmas amostras do FluidR3; a diferença aparece mais na banda.
   - **GeneralUser GS 2.0.3** (32 MB), de S. Christian Collins: cópia local em `sons/`, junto com a
     licença. O autor permite o uso em projetos, mas pede que sites usem uma cópia própria em vez de
     apontar para os arquivos dele.

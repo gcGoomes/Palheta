@@ -4,7 +4,7 @@
     {
       "name": "palheta",
       "runtimeExecutable": "py",
-      "runtimeArgs": ["servidor.py", "8000"],
+      "runtimeArgs": ["servidor.py"],
       "port": 8000
     }
   ]
