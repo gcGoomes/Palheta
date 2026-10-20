@@ -20,13 +20,14 @@
 
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
-body { margin: 0; min-height: 100vh; background: var(--bg); }
+/* coluna: o topo pode ganhar uma segunda linha e a área de baixo ocupa o resto da tela */
+body { margin: 0; height: 100vh; display: flex; flex-direction: column; background: var(--bg); }
 h2 { font-size: 15px; font-weight: 600; margin: 0; }
 button, select, input { font: inherit; color: inherit; }
 
 /* ---------- topo ---------- */
 .topbar {
-  height: var(--header-h);
+  height: var(--header-h); flex: none;
   display: flex; align-items: center; gap: 16px;
   padding: 0 16px;
   background: var(--surface);
@@ -58,7 +59,7 @@ select {
   grid-template-columns: minmax(0, 1fr) 400px;
   gap: 16px;
   padding: 16px;
-  height: calc(100vh - var(--header-h));
+  flex: 1; min-height: 0;
 }
 .score-col { display: flex; flex-direction: column; gap: 10px; min-width: 0; min-height: 0; position: relative; }
 .coach-col { display: flex; flex-direction: column; gap: 16px; overflow-y: auto; min-height: 0; padding-bottom: 8px; }
@@ -254,14 +255,44 @@ select {
 .lane-actions { display: flex; justify-content: flex-end; margin-top: 10px; }
 .coach-diagram svg, .tr-shape svg { max-width: 100%; height: auto; }
 
+/* Minhas músicas e Procurar tab */
+.sheet { width: min(560px, 94vw); max-height: min(720px, 90vh); border: none; border-radius: 14px; padding: 18px 20px; color: var(--ink); background: var(--surface); }
+.sheet[open] { display: flex; flex-direction: column; gap: 12px; }
+.sheet::backdrop { background: rgba(31, 29, 25, 0.45); }
+.sheet-actions { display: flex; gap: 8px; }
+.sheet-note { font-size: 12px; color: var(--muted); margin: 0; line-height: 1.45; }
+.field { width: 100%; height: 40px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--line-strong); background: var(--surface); }
+.lib-list { list-style: none; margin: 0; padding: 0; overflow-y: auto; flex: 1; min-height: 80px; }
+.lib-item { display: flex; align-items: center; gap: 8px; padding: 2px 0; border-top: 1px solid var(--line); }
+.lib-item:first-child { border-top: none; }
+.lib-open { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; padding: 8px 6px; border: none; border-radius: 8px; background: none; text-align: left; cursor: pointer; }
+.lib-open:hover { background: #faf8f4; }
+.lib-open b, .lib-open small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
+.lib-open b { font-size: 15px; }
+.lib-open small { font-size: 12px; color: var(--muted); }
+.lib-item.current b { color: var(--accent); }
+.lib-list .empty { margin: 8px 0; line-height: 1.5; }
+.ft-form { display: flex; flex-direction: column; gap: 10px; }
+.ft-sites { display: flex; flex-wrap: wrap; gap: 8px; }
+.ft-sites .btn { flex: 1 1 200px; text-decoration: none; }
+.ft-steps { margin: 0; padding-left: 20px; font-size: 14px; line-height: 1.5; }
+
+/* notebook e tablet deitado: o seletor de música vai para uma segunda linha do topo */
+@media (max-width: 1360px) {
+  .topbar { height: auto; flex-wrap: wrap; padding: 8px 16px; gap: 8px 16px; }
+  .song-picker { order: 2; width: 100%; }
+  .song-picker select { flex: 1 1 160px; min-width: 0; }
+}
+
 /* tablet em pé e celular: uma coluna, partitura em cima e professor embaixo */
 @media (max-width: 960px) {
-  .layout { grid-template-columns: 1fr; height: auto; padding: 12px; gap: 12px; }
+  body { height: auto; min-height: 100vh; }
+  .layout { grid-template-columns: 1fr; padding: 12px; gap: 12px; }
   .score-wrap { height: clamp(300px, 40vh, 520px); flex: none; }
   .coach-col { overflow: visible; }
   .topbar { height: auto; flex-wrap: wrap; padding: 10px 12px; gap: 10px; }
   .song-picker { order: 2; width: 100%; }
-  .song-picker select { flex: 1; min-width: 0; max-width: none; }
+  .song-picker select { flex: 1 1 200px; max-width: none; }
 }
 
 /* celular */
@@ -273,7 +304,9 @@ select {
   .tr-stage { grid-template-columns: 1fr 1fr; }
   .tr-swap { display: none; }
   .tr-shape b { font-size: 22px; }
-  .trainer { padding: 14px; }
+  .trainer, .sheet { padding: 14px; }
+  .song-picker select { flex-basis: 100%; }
+  .song-picker .btn { flex: 1 1 0; padding: 0 8px; font-size: 14px; }
   .fx { grid-template-columns: 70px minmax(0, 1fr) 64px; }
   .mix-rows { grid-template-columns: 1fr; }
   .mix-row { grid-template-columns: 28px minmax(0, 1fr) 90px 40px; }
@@ -282,7 +315,8 @@ select {
 /* telas de toque: alvos maiores e sem o atraso do duplo toque */
 @media (pointer: coarse) {
   button, select, input, summary, .cell, .shape, .preset { touch-action: manipulation; }
-  .btn, select { height: 44px; }
+  .btn, select, .field { height: 44px; }
+  .lib-open { min-height: 44px; }
   .btn.small { height: 40px; }
   .preset { height: 40px; padding: 0 14px; }
   .segmented button { padding: 10px 12px; }

@@ -3,6 +3,7 @@ import { diagramSVG, arrowSVG } from './diagram.js';
 import { PRESETS, createToneEngine, routeMidi } from './tone.js';
 import { createProgress, dayKey, formatMinutes } from './progress.js';
 import { createTrainer } from './trainer.js';
+import { createLibrary, fileId } from './library.js';
 
 const AT = 'https://cdn.jsdelivr.net/npm/@coderline/alphatab@1.8.4/dist';
 // Bancos de sons para escolher no painel de timbre. O navegador baixa uma vez e guarda em cache.
@@ -60,9 +61,14 @@ const state = {
   songTitle: '',
   fileName: '',
   pass: null, // volta em andamento: { from: tick inicial, speed: menor velocidade usada }
+  libId: null, // música aberta, se ela está em Minhas músicas (as embutidas não ficam lá)
+  opening: null, // arquivo sendo aberto: { entry, bytes (só se é novo na biblioteca) }
 };
 
 const progress = createProgress();
+const library = createLibrary();
+// Mesma chave do progresso (minutos e recordes) usada no scoreLoaded.
+const songKeyOf = (title, artist, fileName) => `${title}|${artist}|${fileName}`.toLowerCase();
 
 const api = new alphaTab.AlphaTabApi($('score'), {
   core: { fontDirectory: `${AT}/font/` },
@@ -103,20 +109,38 @@ $('songSelect').addEventListener('change', (e) => {
 });
 
 async function loadSong(song) {
+  rememberPlace();
   showLoading('Carregando tablatura…');
   const res = await fetch(song.file);
   state.fileName = song.file.split('/').pop();
+  state.opening = null;
   api.tex(await res.text(), [0]);
 }
 
+// Arquivo aberto pelo botão ou arrastado: se já está na biblioteca, reabre a mesma entrada
+// (com faixa, velocidade e posição guardadas); se não, ela é criada quando a música carregar.
 async function loadFile(file) {
+  rememberPlace();
   showLoading(`Abrindo ${file.name}…`);
-  state.fileName = file.name;
-  if (/\.(atex|txt)$/i.test(file.name)) api.tex(await file.text(), [0]);
-  else api.load(new Uint8Array(await file.arrayBuffer()), [0]);
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  const id = fileId(bytes);
+  let saved = null;
+  try {
+    saved = await library.get(id);
+  } catch {
+    // sem biblioteca (navegação privada, por exemplo): abre do mesmo jeito
+  }
+  openScore(saved ?? { id, fileName: file.name, size: bytes.length, added: Date.now() }, bytes, !saved);
+}
+
+function openScore(entry, bytes, isNew) {
+  state.fileName = entry.fileName;
+  state.opening = { entry, bytes: isNew ? bytes : null };
+  if (/\.(atex|txt)$/i.test(entry.fileName)) api.tex(new TextDecoder().decode(bytes), [0]);
+  else api.load(bytes, [0]);
   const sel = $('songSelect');
   sel.querySelector('option[data-file]')?.remove();
-  sel.insertAdjacentHTML('beforeend', `<option data-file value="file">Arquivo: ${escapeHtml(file.name)}</option>`);
+  sel.insertAdjacentHTML('beforeend', `<option data-file value="file">Arquivo: ${escapeHtml(entry.fileName)}</option>`);
   sel.value = 'file';
 }
 
@@ -136,6 +160,191 @@ function showLoading(text) {
   $('loading').textContent = text;
   $('loading').hidden = false;
 }
+
+// ---------- Minhas músicas (biblioteca no IndexedDB) ----------
+
+async function addToLibrary(score, { entry, bytes }) {
+  Object.assign(entry, { title: score.title ?? '', artist: score.artist ?? '', lastUsed: Date.now() });
+  try {
+    await library.save(entry, bytes);
+    if (bytes) toast('Guardada em Minhas músicas');
+    if ($('library').open) refreshLibrary();
+  } catch (err) {
+    console.warn('Não consegui guardar em Minhas músicas', err);
+    if (!bytes) return;
+    if (state.libId === entry.id) state.libId = null;
+    toast('A música abriu, mas não consegui guardar em Minhas músicas (navegação privada ou sem espaço no navegador).');
+  }
+}
+
+// Guarda a faixa, a velocidade e onde a pessoa parou na música aberta.
+let rememberTimer = null;
+function rememberPlace() {
+  clearTimeout(rememberTimer);
+  if (!state.libId || !state.score) return;
+  // posição ainda por restaurar (música recém-aberta ou MIDI refeita): vale a que vai voltar
+  const seek = state.pendingSeek && performance.now() <= state.pendingSeek.until ? state.pendingSeek : null;
+  library.update(state.libId, {
+    trackIndex: state.trackIndex,
+    speed: +$('speed').value / 100,
+    tick: Math.max(0, Math.round(seek ? seek.tick : state.lastTick)),
+    lastUsed: Date.now(),
+  }).catch((err) => console.warn('Não consegui guardar onde você parou', err));
+}
+
+function rememberSoon() {
+  clearTimeout(rememberTimer);
+  rememberTimer = setTimeout(rememberPlace, 1500);
+}
+
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) rememberPlace();
+});
+window.addEventListener('pagehide', rememberPlace);
+
+let libItems = []; // null = biblioteca indisponível neste navegador
+
+async function refreshLibrary() {
+  try {
+    libItems = await library.list();
+  } catch (err) {
+    console.warn('Minhas músicas indisponível', err);
+    libItems = null;
+  }
+  renderLibrary();
+}
+
+const plain = (s) => String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+
+function usedText(time) {
+  const day = (t) => new Date(t).setHours(0, 0, 0, 0);
+  const days = Math.round((day(Date.now()) - day(time)) / 86400000);
+  if (days <= 0) return 'usada hoje';
+  if (days === 1) return 'usada ontem';
+  if (days < 30) return `usada há ${days} dias`;
+  return `usada em ${new Date(time).toLocaleDateString('pt-BR')}`;
+}
+
+function renderLibrary() {
+  const list = $('libList');
+  const query = $('libSearch').value.trim();
+  const findLink = (text) => `<button class="link" data-find>${text}</button>`;
+  if (!libItems) {
+    list.innerHTML = '<li class="empty">Minhas músicas não funciona neste navegador (talvez esteja em navegação privada). Os arquivos abrem normalmente, só não ficam guardados.</li>';
+    return;
+  }
+  if (!libItems.length) {
+    list.innerHTML = `<li class="empty">Nenhuma música guardada ainda. Use "Abrir arquivo" ou arraste um arquivo Guitar Pro, MusicXML ou alphaTex para a janela. Ainda não tem a tab? ${findLink('Procurar tab')}</li>`;
+    return;
+  }
+  const q = plain(query);
+  const shown = q ? libItems.filter((m) => plain(`${m.title} ${m.artist} ${m.fileName}`).includes(q)) : libItems;
+  if (!shown.length) {
+    list.innerHTML = `<li class="empty">Nenhuma música sua com "${escapeHtml(query)}". ${findLink('Procurar essa tab na internet')}</li>`;
+    return;
+  }
+  list.innerHTML = shown.map((m) => {
+    const title = m.title || m.fileName;
+    const sub = [m.artist, m.title ? m.fileName : ''].filter(Boolean).join(' · ');
+    const secs = progress.songStats(songKeyOf(m.title, m.artist, m.fileName))?.seconds ?? 0;
+    const current = m.id === state.libId;
+    return `<li class="lib-item${current ? ' current' : ''}">
+      <button class="lib-open" data-open="${m.id}">
+        <b>${escapeHtml(title)}</b>
+        ${sub ? `<small>${escapeHtml(sub)}</small>` : ''}
+        <small>${current ? 'Aberta agora · ' : ''}${secs ? `${formatMinutes(secs)} praticados` : 'ainda sem prática'} · ${usedText(m.lastUsed)}</small>
+      </button>
+      <button class="btn small" data-remove="${m.id}" aria-label="Remover ${escapeHtml(title)}">Remover</button>
+    </li>`;
+  }).join('');
+}
+
+async function openFromLibrary(id) {
+  $('library').close();
+  if (id === state.libId) return; // já está aberta
+  rememberPlace();
+  let entry = null;
+  let bytes = null;
+  try {
+    entry = await library.get(id);
+    bytes = entry && (await library.bytes(id));
+  } catch (err) {
+    console.warn(err);
+  }
+  if (!bytes) {
+    toast('Não consegui abrir essa música de Minhas músicas.');
+    return;
+  }
+  showLoading(`Abrindo ${entry.title || entry.fileName}…`);
+  openScore(entry, bytes, false);
+}
+
+async function removeFromLibrary(id) {
+  const m = libItems?.find((x) => x.id === id);
+  if (!m || !confirm(`Remover "${m.title || m.fileName}" de Minhas músicas? O arquivo guardado neste navegador é apagado; os minutos e recordes continuam.`)) return;
+  try {
+    await library.remove(id);
+    if (state.libId === id) state.libId = null;
+  } catch (err) {
+    console.warn(err);
+    toast('Não consegui remover essa música.');
+  }
+  refreshLibrary();
+}
+
+$('libraryBtn').addEventListener('click', () => {
+  $('libSearch').value = '';
+  renderLibrary();
+  $('library').showModal();
+  refreshLibrary();
+});
+$('libClose').addEventListener('click', () => $('library').close());
+$('libAdd').addEventListener('click', () => {
+  $('library').close();
+  $('fileInput').click();
+});
+$('libSearch').addEventListener('input', renderLibrary);
+$('libList').addEventListener('click', (e) => {
+  const open = e.target.closest('[data-open]');
+  const remove = e.target.closest('[data-remove]');
+  if (open) openFromLibrary(open.dataset.open);
+  else if (remove) removeFromLibrary(remove.dataset.remove);
+  else if (e.target.closest('[data-find]')) {
+    $('library').close();
+    openFindTab($('libSearch').value.trim());
+  }
+});
+
+// ---------- Procurar tab (só abre a busca dos sites; nada é baixado pelo app) ----------
+
+const TAB_SEARCH = {
+  ftSongsterr: (q) => `https://www.songsterr.com/?pattern=${encodeURIComponent(q)}`,
+  // type=500 é o filtro "Guitar Pro" da busca do Ultimate Guitar
+  ftUltimate: (q) => `https://www.ultimate-guitar.com/search.php?search_type=title&value=${encodeURIComponent(q)}&type=500`,
+};
+
+function updateTabLinks() {
+  const q = $('ftQuery').value.trim();
+  for (const [id, url] of Object.entries(TAB_SEARCH)) $(id).href = url(q);
+}
+
+function openFindTab(query = '') {
+  if (query) $('ftQuery').value = query;
+  updateTabLinks();
+  $('findTab').showModal();
+  $('ftQuery').select();
+}
+
+$('findTabBtn').addEventListener('click', () => openFindTab());
+$('ftClose').addEventListener('click', () => $('findTab').close());
+$('ftQuery').addEventListener('input', updateTabLinks);
+$('ftForm').addEventListener('submit', (e) => e.preventDefault());
+$('ftForm').addEventListener('click', (e) => {
+  if (!e.target.closest('.ft-sites a') || $('ftQuery').value.trim()) return;
+  e.preventDefault();
+  $('ftQuery').reportValidity();
+  $('ftQuery').focus();
+});
 
 let soundFontFallbackUsed = false;
 api.error.on((err) => {
@@ -182,8 +391,13 @@ api.scoreLoaded.on((score) => {
   $('songTitle').textContent = title || 'Sem título';
   state.songTitle = title || state.fileName || 'Sem título';
   // por arquivo: o riff embutido e um .gp da mesma música têm progresso separado
-  state.songKey = `${score.title}|${score.artist}|${state.fileName}`.toLowerCase();
+  state.songKey = songKeyOf(score.title, score.artist, state.fileName);
   state.pass = null;
+  const opening = state.opening;
+  state.opening = null;
+  state.libId = opening?.entry.id ?? null;
+  const saved = opening?.entry;
+  state.lastTick = 0; // a posição da música anterior não vale para esta
   renderProgress();
   $('trackSelect').innerHTML = score.tracks
     .map((t, i) => {
@@ -194,10 +408,19 @@ api.scoreLoaded.on((score) => {
   let first = score.tracks.findIndex(isGuitarTrack);
   if (first < 0) first = score.tracks.findIndex(hasTab);
   first = Math.max(0, first);
+  if (score.tracks[saved?.trackIndex]) first = saved.trackIndex;
   state.mix = score.tracks.map((_, i) => ({ volume: 1, muted: i !== first }));
   state.trackIndex = -1;
   selectTrack(first, first > 0);
+  if (saved?.speed) {
+    $('speed').value = Math.round(saved.speed * 100);
+    api.playbackSpeed = +$('speed').value / 100;
+  }
+  // O tocador volta ao início quando recebe a MIDI desta música e ignoraria um tickPosition
+  // enviado agora; a posição é aplicada quando ele avisar que voltou (playerPositionChanged).
+  if (saved?.tick > 0) state.pendingSeek = { tick: saved.tick, until: performance.now() + 10000 };
   updateSpeedLabel();
+  if (opening) addToLibrary(score, opening);
 });
 
 const hasTab = (t) => Boolean(t.staves[0]?.isStringed && t.staves[0].tuning.length);
@@ -214,7 +437,10 @@ function isGuitarTrack(t) {
   return GUITAR_NAME.test(t.name) || t.staves[0].tuning.length === 6;
 }
 
-$('trackSelect').addEventListener('change', (e) => selectTrack(+e.target.value, true, true));
+$('trackSelect').addEventListener('change', (e) => {
+  selectTrack(+e.target.value, true, true);
+  rememberSoon();
+});
 
 // regenerate: refaz a MIDI (a faixa escolhida é a que passa pela pedaleira). Ao carregar
 // uma música não precisa: o próprio alphaTab gera a MIDI logo depois do scoreLoaded.
@@ -582,10 +808,12 @@ $('openTrainer').addEventListener('click', () => {
 });
 
 // Tempo de prática: conta enquanto a música ou o treino de trocas está tocando.
+let practiceTicks = 0;
 setInterval(() => {
   if (!state.playing && !trainer.running) return;
   progress.practice(state.songKey, state.songTitle, 1);
   renderProgress();
+  if (state.playing && ++practiceTicks % 10 === 0) rememberPlace();
 }, 1000);
 
 // Uma "volta" vale para recorde só se começou no início (da música ou do trecho escolhido);
@@ -725,6 +953,7 @@ api.playerReady.on(() => {
 api.playerStateChanged.on((e) => {
   state.playing = e.state === 1;
   setPlayLabel(state.playing);
+  if (!state.playing) rememberPlace();
   if (e.stopped) state.pass = null;
   else if (state.playing && !state.pass) startPass(api.tickPosition);
 });
@@ -761,7 +990,10 @@ api.playerPositionChanged.on((e) => {
   if (e.isSeek) {
     if (state.restoringSeek) state.restoringSeek = false;
     else if (state.playing) startPass(tick);
-    else state.pass = null;
+    else {
+      state.pass = null;
+      rememberSoon();
+    }
   }
   state.lastTick = tick;
   if (!state.analysis?.ok || !api.tickCache) return;
@@ -808,6 +1040,7 @@ $('speed').addEventListener('input', () => {
   api.playbackSpeed = +$('speed').value / 100;
   if (state.pass) state.pass.speed = Math.min(state.pass.speed, api.playbackSpeed);
   updateSpeedLabel();
+  rememberSoon();
 });
 $('metro').addEventListener('change', applyTransport);
 $('countIn').addEventListener('change', applyTransport);
@@ -852,6 +1085,7 @@ function onLap() {
   $('speed').value = v;
   api.playbackSpeed = v / 100;
   updateSpeedLabel();
+  rememberSoon();
   toast(v >= 100 ? `Volta ${state.laps}: você chegou na velocidade original!` : `Volta ${state.laps} completa, subindo para ${v}%`);
   if (v >= 100) {
     state.challenge = false;

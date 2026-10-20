@@ -19,6 +19,8 @@
         Abrir arquivo
         <input type="file" id="fileInput" accept=".gp,.gp3,.gp4,.gp5,.gpx,.gp7,.xml,.musicxml,.mxl,.atex,.txt" hidden>
       </label>
+      <button class="btn" id="libraryBtn">Minhas músicas</button>
+      <button class="btn" id="findTabBtn">Procurar tab</button>
       <select id="trackSelect" aria-label="Faixa"></select>
     </div>
     <span class="streak" id="streakChip" title="Dias seguidos com pelo menos 1 minuto de prática"></span>
@@ -175,6 +177,39 @@
       <p class="tr-record" id="trRecord"></p>
       <ul class="tips" id="trTips"></ul>
     </div>
+  </dialog>
+
+  <dialog id="library" class="sheet" aria-labelledby="libTitle">
+    <div class="tr-head">
+      <h2 id="libTitle">Minhas músicas</h2>
+      <div class="sheet-actions">
+        <button class="btn small" id="libAdd">Abrir arquivo</button>
+        <button class="btn small" id="libClose">Fechar</button>
+      </div>
+    </div>
+    <input type="search" id="libSearch" class="field" placeholder="Buscar por música ou artista" aria-label="Buscar nas minhas músicas" autocomplete="off">
+    <ul id="libList" class="lib-list"></ul>
+    <p class="sheet-note">Todo arquivo que você abre (ou arrasta para a janela) fica guardado aqui, só neste navegador, com a faixa, a velocidade e o ponto onde você parou. Limpar os dados do site apaga a lista.</p>
+  </dialog>
+
+  <dialog id="findTab" class="sheet" aria-labelledby="ftTitle">
+    <div class="tr-head">
+      <h2 id="ftTitle">Procurar tab</h2>
+      <button class="btn small" id="ftClose">Fechar</button>
+    </div>
+    <form id="ftForm" class="ft-form">
+      <input type="search" id="ftQuery" class="field" placeholder="Nome da música (e do artista)" aria-label="Nome da música" autocomplete="off" required>
+      <div class="ft-sites">
+        <a class="btn primary" id="ftSongsterr" href="https://www.songsterr.com/" target="_blank" rel="noopener noreferrer">Songsterr</a>
+        <a class="btn primary" id="ftUltimate" href="https://www.ultimate-guitar.com/" target="_blank" rel="noopener noreferrer">Ultimate Guitar (Guitar Pro)</a>
+      </div>
+    </form>
+    <ol class="ft-steps">
+      <li>A busca abre o site numa aba nova.</li>
+      <li>Baixe o arquivo Guitar Pro lá, com a sua conta no site.</li>
+      <li>Arraste o arquivo para o Palheta ou use "Abrir arquivo". Ele entra em Minhas músicas.</li>
+    </ol>
+    <p class="sheet-note">O Palheta só abre a busca: as tabs pertencem aos sites e a quem as escreveu, e o download segue as regras de cada um.</p>
   </dialog>
 
   <script src="https://cdn.jsdelivr.net/npm/@coderline/alphatab@1.8.4/dist/alphaTab.js" crossorigin="anonymous"></script>

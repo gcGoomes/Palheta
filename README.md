@@ -34,6 +34,16 @@ minutos. O arquivo `.nojekyll` faz o GitHub servir os arquivos como estão.
 - **Abrir arquivo:** aceita Guitar Pro (`.gp`, `.gp3`, `.gp4`, `.gp5`, `.gpx`), MusicXML e alphaTex.
   Também dá para arrastar o arquivo para a janela. O app escolhe sozinho a primeira faixa de guitarra;
   troque no seletor de faixas se quiser outra.
+- **Minhas músicas:** todo arquivo aberto (pelo botão ou arrastado) fica guardado aqui, junto com a
+  faixa, a velocidade e o ponto onde você parou; ao reabrir, tudo volta como estava. A lista mostra
+  as mais recentes primeiro, tem busca por música ou artista e os minutos já praticados em cada uma.
+  Abrir o mesmo arquivo de novo não duplica. Fica só neste navegador (IndexedDB): outro aparelho tem
+  a própria lista, e limpar os dados do site apaga tudo. Em navegação privada o arquivo abre, mas pode
+  não ficar guardado (o app avisa). As músicas embutidas continuam no seletor de música.
+- **Procurar tab:** escreva o nome da música e abra a busca no Songsterr ou no Ultimate Guitar
+  (filtrada por arquivos Guitar Pro), numa aba nova. Baixe o arquivo no site, com a sua conta, e
+  arraste para o Palheta ou use "Abrir arquivo": ele entra em Minhas músicas. O app só abre o link da
+  busca; não baixa nem copia nada desses sites (as tabs são licenciadas por eles).
 - **Volume das faixas:** abra o painel abaixo dos controles para ajustar o volume de cada instrumento
   (0–150%) ou silenciá-lo. "Só a minha faixa" e "Banda toda" são atalhos.
 - **Timbre da guitarra:** presets (Original, Violão, Limpo, Crunch, Distorção, Pesado) e ajustes
@@ -66,6 +76,7 @@ minutos. O arquivo `.nojekyll` faz o GitHub servir os arquivos como estão.
 | `js/tone.js` | Presets de timbre e pedaleira (distorção, tom, reverb) em Web Audio |
 | `js/trainer.js` | Treino de trocas de acordes, com metrônomo próprio |
 | `js/progress.js` | Tempo de prática, dias seguidos e recordes (localStorage) |
+| `js/library.js` | Minhas músicas: arquivos abertos, faixa, velocidade e posição (IndexedDB) |
 | `songs/*.atex` | Músicas embutidas, escritas em [alphaTex](https://alphatab.net/docs/alphatex/introduction) |
 
 O dedilhado automático testa todas as combinações de dedos para cada forma, pontua cada uma
