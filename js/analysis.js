@@ -7,7 +7,7 @@ const FLATS = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
 const SHARPS = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 const SOLFEGE = { C: 'Dó', D: 'Ré', E: 'Mi', F: 'Fá', G: 'Sol', A: 'Lá', B: 'Si' };
 
-const CHORD_TYPES = [
+export const CHORD_TYPES = [
   ['', [0, 4, 7], 'acorde maior'],
   ['m', [0, 3, 7], 'acorde menor'],
   ['5', [0, 7], 'power chord (tônica + quinta)'],

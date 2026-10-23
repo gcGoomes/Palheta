@@ -9,10 +9,10 @@
 
 export const FINGER_NAMES = { 1: 'indicador', 2: 'médio', 3: 'anelar', 4: 'mindinho' };
 
-const STANDARD_TUNING = [40, 45, 50, 55, 59, 64]; // da corda mais grave para a mais aguda
+export const STANDARD_TUNING = [40, 45, 50, 55, 59, 64]; // da corda mais grave para a mais aguda
 
 // padrão de casas (grave → aguda) : dedos (grave → aguda). x = não toca, 0 = solta.
-const CHORD_LIBRARY = {
+export const CHORD_LIBRARY = {
   'x32010': 'x32010', // C
   'x02220': 'x01230', // A
   '320003': '210003', // G
@@ -39,6 +39,13 @@ const CHORD_LIBRARY = {
   'x02200': 'x01200', // Asus2
   'x32033': 'x21034', // Cadd9
   'xx3210': 'xx3210', // Fmaj7
+  'x32000': 'x32000', // Cmaj7
+  'xx0211': 'xx0211', // Dm7
+  'x02120': 'x02130', // Amaj7
+  'xx0222': 'xx0111', // Dmaj7
+  'x02230': 'x01230', // Asus4
+  '022200': '023400', // Esus4
+  '332010': '432010', // C/G
 };
 
 const FINGER_COST = { 1: 0, 2: 0, 3: 0.1, 4: 0.35 };
@@ -105,13 +112,18 @@ function fromLibrary(notes, tuning) {
     const f = Number(fingerPattern[s - 1]);
     if (f >= 1) fingers[s] = f;
   }
+  return fixedFingering(notes, fingers);
+}
+
+// Dedilhado já decidido (dicionário, formas de pestana): fingers = { corda: dedo }.
+export function fixedFingering(notes, fingers, source = 'library') {
   const fretted = notes.filter(isFretted);
   return {
     fingers,
     barres: barresFrom(notes, fingers),
     pos: fretted.length ? handPosition(fretted, (n) => fingers[n.string]) : null,
     cost: 0,
-    source: 'library',
+    source,
   };
 }
 

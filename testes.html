@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Palheta · testes</title>
+  <style>
+    body { font: 15px/1.5 system-ui, sans-serif; margin: 24px; color: #1f1d19; background: #f5f3ee; }
+    .ok { color: #2b8a3e; } .falha { color: #c92a2a; }
+    pre { white-space: pre-wrap; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <h1>Testes do afinador e do dicionário de acordes</h1>
+  <p>Roda sozinho ao abrir (leva alguns segundos). Não precisa de microfone: o afinador é testado com sinais sintéticos.</p>
+  <div id="out">Rodando…</div>
+  <script type="module">
+    import { detectPitch, synthString, midiToFreq, freqToMidi, createSmoother } from './js/tuner.js';
+    import { parseChord, chordShapes } from './js/chords.js';
+    import { CHORD_TYPES } from './js/analysis.js';
+
+    const lines = [];
+    const report = (ok, text) => lines.push(`<p class="${ok ? 'ok' : 'falha'}">${ok ? '✔' : '✘'} ${text}</p>`);
+
+    // 1. Afinador: de E2 (6ª corda solta) até E5 (12ª casa da Mi aguda), com desafinação,
+    // seno puro e "corda" rica em harmônicos, com e sem ruído, em 44,1 e 48 kHz.
+    let worst = 0, octave = 0, bad = [], total = 0;
+    for (const sr of [44100, 48000]) for (let m = 40; m <= 76; m++) for (const detune of [-37, 0, 23, 45])
+      for (const rich of [false, true]) for (const noise of [0, 0.01, 0.03, 0.06]) {
+        const f = midiToFreq(m + detune / 100);
+        const r = detectPitch(synthString(f, sr, 4096, { rich, noise, seed: m * 7 + detune + 100, t0: 0.013 * m }), sr);
+        total++;
+        const err = r ? (freqToMidi(r.freq) - freqToMidi(f)) * 100 : Infinity;
+        if (Math.abs(err) > 600) octave++;
+        if (Math.abs(err) > 2) bad.push(`${m}/${detune}/${rich}/${noise}: ${err.toFixed(1)}`);
+        else worst = Math.max(worst, Math.abs(err));
+      }
+    report(!bad.length && !octave, `Afinador: ${total} sinais, pior erro ${worst.toFixed(2)} cents (limite ±2), ${octave} pulos de oitava${bad.length ? `; fora do limite: ${bad.slice(0, 5).join(', ')}` : ''}`);
+
+    let white = 1;
+    const noise = new Float32Array(4096).map(() => ((white = (white * 16807) % 2147483647) / 2147483647) * 0.4 - 0.2);
+    report(detectPitch(new Float32Array(4096), 48000) === null && detectPitch(noise, 48000) === null, 'Afinador: silêncio e ruído branco não viram nota');
+
+    let smWorst = 0;
+    for (let m = 40; m <= 76; m++) {
+      const sm = createSmoother();
+      const f = midiToFreq(m + 0.17);
+      let v;
+      for (let i = 0; i < 20; i++) {
+        const r = detectPitch(synthString(f, 48000, 4096, { noise: 0.06, seed: i * 31 + m, t0: i * 0.05 }), 48000);
+        v = sm.push(r ? freqToMidi(r.freq) : null);
+      }
+      smWorst = Math.max(smWorst, Math.abs(v - freqToMidi(f)) * 100);
+    }
+    report(smWorst <= 2, `Afinador suavizado (20 leituras com ruído): pior erro ${smWorst.toFixed(2)} cents`);
+
+    // 2. Dicionário: todas as tônicas × todos os tipos de CHORD_TYPES + acordes com baixo trocado.
+    // Conferência independente do nameShape: notas, baixo, dedos e abertura da mão.
+    const roots = ['C', 'C#', 'Db', 'D', 'Eb', 'E', 'F', 'F#', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
+    const suffixes = [...new Set(CHORD_TYPES.map((t) => t[0]))];
+    const noFifthOk = new Set(CHORD_TYPES.filter((t) => !t[1].includes(7) && CHORD_TYPES.some((u) => u[0] === t[0] && u[1].includes(7))).map((t) => t[0]));
+    const problems = [];
+    let chords = 0, shapes = 0;
+    const check = (name) => {
+      const ch = parseChord(name);
+      if (!ch) { problems.push(`${name}: cifra não reconhecida`); return; }
+      const list = chordShapes(ch);
+      chords++;
+      shapes += list.length;
+      if (list.length < 3 || list.length > 6) problems.push(`${name}: ${list.length} formas`);
+      for (const s of list) {
+        const ns = s.item.notes;
+        const pcs = new Set(ns.map((n) => n.pitch % 12));
+        const allowed = new Set([...ch.pcs, ch.bassPc]);
+        const extra = [...pcs].filter((p) => !allowed.has(p));
+        const missing = ch.pcs.filter((p) => !pcs.has(p) && !((p - ch.rootPc + 12) % 12 === 7 && noFifthOk.has(ch.suffix)));
+        const fretted = ns.filter((n) => n.fret > 0);
+        const fingers = s.item.fingering.fingers;
+        const byFinger = {};
+        let clash = false;
+        for (const n of fretted) {
+          const d = fingers[n.string];
+          if (!d || (byFinger[d] != null && byFinger[d] !== n.fret)) clash = true;
+          byFinger[d] = n.fret;
+        }
+        const span = fretted.length ? Math.max(...fretted.map((n) => n.fret)) - Math.min(...fretted.map((n) => n.fret)) : 0;
+        if (extra.length || missing.length || Math.min(...ns.map((n) => n.pitch)) % 12 !== ch.bassPc || clash || span > 4) {
+          problems.push(`${name} ${s.key}: notas a mais ${extra}, faltando ${missing}, dedos ${clash ? 'impossíveis' : 'ok'}, abertura ${span}`);
+        }
+      }
+    };
+    for (const r of roots) for (const s of suffixes) check(r + s);
+    for (const n of ['C/G', 'C/E', 'D/F#', 'G/B', 'Am/G', 'Am/E', 'F/C', 'Em/B', 'A/C#', 'E/G#', 'Dm/F', 'D/A']) check(n);
+    report(!problems.length, `Dicionário: ${chords} acordes, ${shapes} formas, ${problems.length} problemas${problems.length ? `<pre>${problems.slice(0, 20).join('\n')}</pre>` : ''}`);
+
+    const parse = ['C', 'F#m', 'Bb7', 'Dsus4', 'Cmaj7', 'A5', 'Em7', 'C/G', 'C7M', 'D4', 'Bm7b5', 'F♯m', 'Ebº'].map((n) => [n, parseChord(n)?.name]);
+    report(parse.every(([, v]) => v), `Cifras reconhecidas: ${parse.map(([n, v]) => `${n} → ${v}`).join(', ')}`);
+
+    document.getElementById('out').innerHTML = lines.join('');
+  </script>
+</body>
+</html>

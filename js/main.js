@@ -4,6 +4,8 @@ import { PRESETS, createToneEngine, routeMidi } from './tone.js';
 import { createProgress, dayKey, formatMinutes } from './progress.js';
 import { createTrainer } from './trainer.js';
 import { createLibrary, fileId } from './library.js';
+import { createTuner } from './tuner.js';
+import { createChordDictionary, parseChord } from './chords.js';
 
 const AT = 'https://cdn.jsdelivr.net/npm/@coderline/alphatab@1.8.4/dist';
 // Bancos de sons para escolher no painel de timbre. O navegador baixa uma vez e guarda em cache.
@@ -83,8 +85,31 @@ const api = new alphaTab.AlphaTabApi($('score'), {
   },
 });
 
-// Para inspecionar pelo console do navegador: palheta.api, palheta.state, palheta.tone
-window.palheta = { api, state, tone };
+// ---------- afinador e dicionário de acordes ----------
+
+const pauseSong = () => { if (state.playing) api.pause(); };
+const tuner = createTuner({ getSongStrings: () => state.analysis?.strings, onOpen: pauseSong });
+const chords = createChordDictionary({ onOpen: pauseSong });
+$('tunerBtn').addEventListener('click', () => tuner.open());
+$('chordsBtn').addEventListener('click', () => chords.open());
+
+// Tocar no nome da forma, no painel do professor, abre o dicionário com esse acorde.
+function coachChord() {
+  const item = state.shownItem;
+  if (!item || item.notes.filter((n) => !n.dead).length < 2) return null;
+  return parseChord(item.shape.name) ? item.shape.name : null;
+}
+function openCoachChord() {
+  const name = coachChord();
+  if (name) chords.open(name);
+}
+$('coachName').addEventListener('click', openCoachChord);
+$('coachName').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openCoachChord(); }
+});
+
+// Para inspecionar pelo console do navegador: palheta.api, palheta.state, palheta.tone, palheta.tuner, palheta.chords
+window.palheta = { api, state, tone, tuner, chords };
 
 // O alphaTab nem sempre percebe quando a área da partitura muda de largura
 // (janela minimizada, painel redimensionado); redesenha quando isso acontece.
@@ -694,6 +719,9 @@ function analyze() {
   if (!a.ok) {
     $('diagram').innerHTML = '';
     $('coachName').textContent = '–';
+    $('coachName').classList.remove('linked');
+    $('coachName').removeAttribute('role');
+    state.shownItem = null;
     $('coachDesc').textContent = a.reason;
     $('coachStroke').className = 'stroke';
     $('coachStroke').innerHTML = '';
@@ -738,9 +766,15 @@ document.querySelectorAll('button[data-strategy]').forEach((b) => {
 function showItem(item, { kicker = 'Agora', hold = false } = {}) {
   const a = state.analysis;
   state.shownBeat = item.beat;
+  state.shownItem = item;
   $('diagram').innerHTML = diagramSVG(item, a.strings);
   $('coachKicker').textContent = hold ? 'Segure' : kicker;
   $('coachName').textContent = prettyName(item.shape.name);
+  const linked = coachChord() != null;
+  $('coachName').classList.toggle('linked', linked);
+  if (linked) $('coachName').setAttribute('role', 'button');
+  else $('coachName').removeAttribute('role');
+  $('coachName').tabIndex = linked ? 0 : -1;
   $('coachDesc').textContent = capitalize(item.shape.desc) + (item.shape.notesText ? ` · ${item.shape.notesText}` : '');
 
   const stroke = $('coachStroke');

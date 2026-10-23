@@ -44,6 +44,18 @@ minutos. O arquivo `.nojekyll` faz o GitHub servir os arquivos como estão.
   (filtrada por arquivos Guitar Pro), numa aba nova. Baixe o arquivo no site, com a sua conta, e
   arraste para o Palheta ou use "Abrir arquivo": ele entra em Minhas músicas. O app só abre o link da
   busca; não baixa nem copia nada desses sites (as tabs são licenciadas por eles).
+- **Afinador** (botão no topo): pede o microfone e mostra a nota, a corda mais perto e um ponteiro
+  de −50 a +50 cents. Fica verde e diz "Afinada" quando a nota fica parada dentro de ±5 cents; fora
+  disso, diz se é para subir (apertar a corda) ou descer (afrouxar). No automático ele escolhe a
+  corda sozinho; toque no nome de uma corda para fixá-la. "Ouvir" toca a nota da corda, para afinar
+  de ouvido (também serve sem microfone). Se a música aberta usa outra afinação (meio tom abaixo,
+  Drop D…), aparece a opção "Afinação desta música". O microfone só funciona em https (o site no
+  GitHub Pages) ou em localhost, e é desligado ao fechar o afinador.
+- **Acordes** (botão no topo): dicionário de acordes. Escreva a cifra (C, F#m, Bb7, Dsus4, Cmaj7,
+  A5, Em7, C/G; também 7M, D4, Bm7b5, Eº…) e veja o nome em português, as notas e de 3 a 6 formas,
+  da mais fácil para a mais difícil: aberta, pestana no formato de Mi e de Lá, formato de Ré e power
+  chord. Cada forma tem diagrama com os dedos, "Como montar" e botões para ouvir (rasgueado ou nota
+  por nota). No painel do professor, tocar no nome do acorde abre o dicionário nele.
 - **Volume das faixas:** abra o painel abaixo dos controles para ajustar o volume de cada instrumento
   (0–150%) ou silenciá-lo. "Só a minha faixa" e "Banda toda" são atalhos.
 - **Timbre da guitarra:** presets (Original, Violão, Limpo, Crunch, Distorção, Pesado) e ajustes
@@ -77,6 +89,10 @@ minutos. O arquivo `.nojekyll` faz o GitHub servir os arquivos como estão.
 | `js/trainer.js` | Treino de trocas de acordes, com metrônomo próprio |
 | `js/progress.js` | Tempo de prática, dias seguidos e recordes (localStorage) |
 | `js/library.js` | Minhas músicas: arquivos abertos, faixa, velocidade e posição (IndexedDB) |
+| `js/tuner.js` | Afinador: detector de altura (YIN, função pura) e o diálogo com o microfone |
+| `js/chords.js` | Dicionário de acordes: lê a cifra, monta e confere as formas (formas móveis + busca) |
+| `js/pluck.js` | Som de corda dedilhada (Karplus-Strong) para o dicionário e o afinador |
+| `testes.html` | Testes do detector (sinais sintéticos) e de todas as formas do dicionário |
 | `songs/*.atex` | Músicas embutidas, escritas em [alphaTex](https://alphatab.net/docs/alphatex/introduction) |
 
 O dedilhado automático testa todas as combinações de dedos para cada forma, pontua cada uma
@@ -107,10 +123,19 @@ pular a mão de um lado para o outro. Para os acordes abertos mais comuns, usa o
 - O alphaTab 1.8.4 tem um bug: assinar o evento `midiLoaded` trava a página em recursão infinita.
   O app evita esse evento (veja o comentário em `js/main.js`).
 - Pelo console do navegador dá para inspecionar o app com `palheta.api`, `palheta.state` e
-  `palheta.tone.levels()` (volume de cada lado da separação guitarra/banda).
+  `palheta.tone.levels()` (volume de cada lado da separação guitarra/banda). Sem microfone,
+  `palheta.tuner.simulate(110)` alimenta o afinador com uma corda sintética (`simulate(null)` = silêncio).
+- Afinador: o detector (`detectPitch` em `js/tuner.js`) usa o YIN sobre 4096 amostras e refina o
+  vale com uma parábola por mínimos quadrados; `testes.html` confere de E2 até E5 (12ª casa da Mi
+  aguda), com seno e com uma onda de corda com harmônicos e ruído: erro de até ±2 cents (na prática
+  ~1,4) e nenhum pulo de oitava. A tela atualiza com `setInterval`, não com `requestAnimationFrame`,
+  que para quando a janela fica escondida.
+- Dicionário de acordes: toda forma é conferida pelo mesmo `nameShape` que dá nome aos acordes da
+  tab (a volta tem de dar o mesmo acorde, com o mesmo baixo, sem corda solta fora do acorde). O som
+  usa um AudioContext próprio, então não passa pela pedaleira nem mexe no tocador da partitura.
 
 ## Próximas ideias
 
 - Biblioteca: listar os arquivos de uma pasta e lembrar onde você parou em cada música.
-- Microfone para conferir se a nota tocada está certa.
+- Usar o microfone do afinador para conferir se a nota tocada na música está certa.
 - Tocar junto com a gravação original (o alphaTab sincroniza a tab com um áudio).

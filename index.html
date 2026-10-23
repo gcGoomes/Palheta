@@ -13,6 +13,10 @@
       <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 22c-1.4 0-7.8-8.6-8.6-13.1C2.8 5.2 6.9 2 12 2s9.2 3.2 8.6 6.9C19.8 13.4 13.4 22 12 22z"/></svg>
       Palheta
     </div>
+    <div class="tools">
+      <button class="btn" id="tunerBtn">Afinador</button>
+      <button class="btn" id="chordsBtn">Acordes</button>
+    </div>
     <div class="song-picker">
       <select id="songSelect" aria-label="Música"></select>
       <label class="btn">
@@ -90,7 +94,7 @@
           <div id="diagram" class="coach-diagram"></div>
           <div class="coach-info">
             <div class="coach-kicker" id="coachKicker">Agora</div>
-            <div class="coach-name" id="coachName">–</div>
+            <div class="coach-name" id="coachName" title="Ver no dicionário de acordes">–</div>
             <div class="coach-desc" id="coachDesc"></div>
             <div class="stroke" id="coachStroke"></div>
             <div class="coach-count" id="coachCount"></div>
@@ -210,6 +214,41 @@
       <li>Arraste o arquivo para o Palheta ou use "Abrir arquivo". Ele entra em Minhas músicas.</li>
     </ol>
     <p class="sheet-note">O Palheta só abre a busca: as tabs pertencem aos sites e a quem as escreveu, e o download segue as regras de cada um.</p>
+  </dialog>
+
+  <dialog id="tuner" class="sheet" aria-labelledby="tuTitle">
+    <div class="tr-head">
+      <h2 id="tuTitle">Afinador</h2>
+      <button class="btn small" id="tuClose">Fechar</button>
+    </div>
+    <div class="segmented tu-tunings" id="tuTunings" role="group" aria-label="Afinação" hidden></div>
+    <div class="tu-strings" id="tuStrings" role="group" aria-label="Corda"></div>
+    <div class="tu-display idle" id="tuDisplay">
+      <div class="tu-note" id="tuNote">–</div>
+      <div class="tu-detail" id="tuDetail"></div>
+      <div class="tu-meter" aria-hidden="true">
+        <div class="tu-zone"></div>
+        <div class="tu-needle" id="tuNeedle"></div>
+        <div class="tu-scale"><span>−50</span><span>−25</span><span>0</span><span>+25</span><span>+50</span></div>
+      </div>
+      <div class="tu-cents" id="tuCents"></div>
+      <p class="tu-instr" id="tuInstr" aria-live="polite"></p>
+    </div>
+    <div class="tu-actions">
+      <button class="btn primary" id="tuMic" hidden>Ligar microfone</button>
+      <button class="btn" id="tuRef">Ouvir a corda</button>
+    </div>
+    <p class="sheet-note" id="tuStatus" aria-live="polite"></p>
+    <p class="sheet-note">Afine sempre subindo até a nota: se passar do ponto, afrouxe um pouco e suba de novo. No automático o afinador escolhe a corda mais perto; se ele confundir, toque no nome da corda.</p>
+  </dialog>
+
+  <dialog id="chords" class="sheet wide" aria-labelledby="chTitle">
+    <div class="tr-head">
+      <h2 id="chTitle">Dicionário de acordes</h2>
+      <button class="btn small" id="chClose">Fechar</button>
+    </div>
+    <input type="search" id="chSearch" class="field" placeholder="Cifra do acorde: C, F#m, Bb7, Dsus4, C/G…" aria-label="Cifra do acorde" autocomplete="off" autocapitalize="off" spellcheck="false">
+    <div id="chResult" class="ch-result"></div>
   </dialog>
 
   <script src="https://cdn.jsdelivr.net/npm/@coderline/alphatab@1.8.4/dist/alphaTab.js" crossorigin="anonymous"></script>
