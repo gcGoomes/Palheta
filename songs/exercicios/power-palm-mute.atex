@@ -1,0 +1,12 @@
+\title "Riff com palm mute"
+\artist "Exercícios do Palheta"
+\tempo 110
+.
+\track "Guitarra"
+\staff {tabs}
+\tuning E4 B3 G3 D3 A2 E2
+\instrument 29
+(0.6{pm} 2.5{lf 2 pm}).8{sd} (0.6{pm} 2.5{lf 2 pm}).8{sd} (0.6{pm} 2.5{lf 2 pm}).8{sd} (0.6{pm} 2.5{lf 2 pm}).8{sd} (3.6{lf 2} 5.5{lf 4}).8{sd} (0.6{pm} 2.5{lf 2 pm}).8{sd} (5.6{lf 2} 7.5{lf 4}).4{sd} |
+(0.6{pm} 2.5{lf 2 pm}).8{sd} (0.6{pm} 2.5{lf 2 pm}).8{sd} (0.6{pm} 2.5{lf 2 pm}).8{sd} (0.6{pm} 2.5{lf 2 pm}).8{sd} (5.6{lf 2} 7.5{lf 4}).8{sd} (0.6{pm} 2.5{lf 2 pm}).8{sd} (3.6{lf 2} 5.5{lf 4}).4{sd} |
+(0.6{pm} 2.5{lf 2 pm}).8{sd} (0.6{pm} 2.5{lf 2 pm}).8{sd} (0.6{pm} 2.5{lf 2 pm}).8{sd} (0.6{pm} 2.5{lf 2 pm}).8{sd} (3.6{lf 2} 5.5{lf 4}).8{sd} (0.6{pm} 2.5{lf 2 pm}).8{sd} (5.6{lf 2} 7.5{lf 4}).4{sd} |
+(0.6{pm} 2.5{lf 2 pm}).8{sd} (0.6{pm} 2.5{lf 2 pm}).8{sd} (0.6{pm} 2.5{lf 2 pm}).8{sd} (0.6{pm} 2.5{lf 2 pm}).8{sd} (5.5{lf 2 ac} 7.4{lf 4 ac}).2{sd} |

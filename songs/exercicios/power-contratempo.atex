@@ -1,0 +1,12 @@
+\title "Riff no contratempo"
+\artist "Exercícios do Palheta"
+\tempo 100
+.
+\track "Guitarra"
+\staff {tabs}
+\tuning E4 B3 G3 D3 A2 E2
+\instrument 29
+(0.5 2.4{lf 2}).8{sd} r.8 (0.5 2.4{lf 2}).8{sd} (3.5{lf 2} 5.4{lf 4}).8{su} r.8 (5.5{lf 2} 7.4{lf 4}).8{su} (3.5{lf 2} 5.4{lf 4}).4{sd} |
+(0.5 2.4{lf 2}).8{sd} r.8 (0.5 2.4{lf 2}).8{sd} (3.6{lf 2} 5.5{lf 4}).8{su} r.8 (3.6{lf 2} 5.5{lf 4}).8{su} (0.6 2.5{lf 2}).4{sd} |
+(0.5 2.4{lf 2}).8{sd} r.8 (0.5 2.4{lf 2}).8{sd} (3.5{lf 2} 5.4{lf 4}).8{su} r.8 (5.5{lf 2} 7.4{lf 4}).8{su} (3.5{lf 2} 5.4{lf 4}).4{sd} |
+(0.5 2.4{lf 2}).8{sd} r.8 (0.5 2.4{lf 2}).8{sd} (5.5{lf 2} 7.4{lf 4}).8{su} r.4 (5.5{lf 2} 7.4{lf 4}).8{sd} (3.5{lf 2} 5.4{lf 4}).8{su} |

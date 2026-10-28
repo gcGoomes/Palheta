@@ -1,0 +1,14 @@
+\title "Pentatônica de Mi menor (aberta)"
+\artist "Exercícios do Palheta"
+\tempo 80
+.
+\track "Violão"
+\staff {tabs}
+\tuning E4 B3 G3 D3 A2 E2
+\instrument 25
+0.6.4 3.6{lf 4}.4 0.5.4 2.5{lf 3}.4 |
+0.4.4 2.4{lf 3}.4 0.3.4 2.3{lf 3}.4 |
+0.2.4 3.2{lf 4}.4 0.1.4 3.1{lf 4}.4 |
+0.1.4 3.2{lf 4}.4 0.2.4 2.3{lf 3}.4 |
+0.3.4 2.4{lf 3}.4 0.4.4 2.5{lf 3}.4 |
+0.5.4 3.6{lf 4}.4 0.6.2 |

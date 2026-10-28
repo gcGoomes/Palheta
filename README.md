@@ -24,6 +24,21 @@ minutos. O arquivo `.nojekyll` faz o GitHub servir os arquivos como estão.
 ## Como usar
 
 - **Tocar / Velocidade:** comece devagar (60–70%) com o metrônomo ligado.
+- **Exercícios** (no seletor de música, abaixo de "Músicas"): 17 exercícios escritos para o Palheta,
+  em quatro grupos e do nível 1 ao 3:
+  - *Trocas de acordes:* Em ⇄ Am, G ⇄ Em, G ⇄ C, C ⇄ D e D ⇄ A. Cada um começa com um acorde por
+    compasso (tempo para trocar), depois dois e por fim semínimas, trocando no meio do compasso.
+    "Treinar esta troca" abre o treino de trocas já com o par do exercício.
+  - *Batidas:* só para baixo, colcheias ↓↑, balada (↓ ↓↑ ↓ ↓↑), batida pop (↓ ↓↑ ↑↓↑) e rock em
+    colcheias com palm mute e acentos no 2 e no 4. As setas de batida estão marcadas na tab: o painel
+    mostra o sentido e o alphaTab toca o rasgueado corda por corda.
+  - *Power chords:* três riffs originais (E5, G5, A5, C5, D5), um deles com palm mute e tudo para baixo.
+  - *Dedos e notas soltas:* aranha 1-2-3-4, pentatônica de Mi menor aberta, pentatônica de Lá menor
+    na 5ª casa e a Ode à Alegria (Beethoven, domínio público) num arranjo nas cordas agudas.
+
+  Ao abrir um exercício aparece o cartão com o objetivo e uma dica, e a velocidade já fica no BPM
+  sugerido para começar (dá para fechar o cartão tocando no título). "Próximo exercício" segue a
+  lista. Cada exercício conta como uma música própria no progresso (minutos e recordes).
 - **Clique numa nota** da tablatura para ver os detalhes dela no painel.
 - **Arraste sobre a tablatura** para escolher um trecho e marque **Repetir** para treiná-lo em loop.
   No celular, use **Repetir este compasso** (abaixo da faixa de batida).
@@ -94,6 +109,8 @@ minutos. O arquivo `.nojekyll` faz o GitHub servir os arquivos como estão.
 | `js/pluck.js` | Som de corda dedilhada (Karplus-Strong) para o dicionário e o afinador |
 | `testes.html` | Testes do detector (sinais sintéticos) e de todas as formas do dicionário |
 | `songs/*.atex` | Músicas embutidas, escritas em [alphaTex](https://alphatab.net/docs/alphatex/introduction) |
+| `songs/exercicios.json` | Lista dos exercícios: categoria, título, arquivo, nível, objetivo, dica e BPM sugerido |
+| `songs/exercicios/*.atex` | Os exercícios, em alphaTex (batidas com `bd`/`bu`, palhetadas com `sd`/`su`, dedos com `lf`) |
 
 O dedilhado automático testa todas as combinações de dedos para cada forma, pontua cada uma
 (esticar, pestana, usar o mindinho…) e escolhe a melhor sequência para a música inteira, evitando
@@ -103,6 +120,14 @@ pular a mão de um lado para o outro. Para os acordes abertos mais comuns, usa o
 
 1. Crie `songs/minha-musica.atex` (veja `smoke-on-the-water.atex` como exemplo).
 2. Adicione uma linha na lista `SONGS` no começo de `js/main.js`.
+
+Para um exercício, crie o `.atex` em `songs/exercicios/` e acrescente um item na categoria certa de
+`songs/exercicios.json` (`id`, `titulo`, `arquivo`, `nivel`, `bpm`, `objetivo`, `dica`). O `\tempo`
+do arquivo é a meta; o `bpm` do item é por onde começar (o app arredonda a velocidade para 5%).
+Notas do alphaTex que o app aproveita: `{bd 60}` e `{bu 40}` (batida para baixo/para cima, com a
+duração do rasgueado em ticks), `{sd}`/`{su}` (palhetada), `{lf 2}` na nota (dedo 1; o 1 do
+alphaTex é o polegar), `{pm}` (palm mute) e `{ac}` (acento). Os exercícios evitam 6/8: nesse
+compasso o app trata cada colcheia como um tempo, então colcheias seguidas sairiam todas para baixo.
 
 ## Observações
 

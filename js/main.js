@@ -65,6 +65,8 @@ const state = {
   pass: null, // volta em andamento: { from: tick inicial, speed: menor velocidade usada }
   libId: null, // música aberta, se ela está em Minhas músicas (as embutidas não ficam lá)
   opening: null, // arquivo sendo aberto: { entry, bytes (só se é novo na biblioteca) }
+  exercise: null, // exercício embutido aberto (item de songs/exercicios.json)
+  nextExercise: null, // exercício sendo carregado
 };
 
 const progress = createProgress();
@@ -127,9 +129,41 @@ new ResizeObserver(() => {
 
 // ---------- carregar músicas ----------
 
-$('songSelect').innerHTML = SONGS.map((s, i) => `<option value="${i}">${escapeHtml(s.title)}</option>`).join('');
+// Exercícios embutidos: songs/exercicios.json lista as categorias e, em cada exercício,
+// o arquivo, o nível (1 a 3), o objetivo, a dica e o BPM sugerido para começar.
+let EXERCISES = [];
+
+function renderSongOptions() {
+  const option = (value, text) => `<option value="${value}">${escapeHtml(text)}</option>`;
+  const songs = SONGS.map((s, i) => option(i, s.title)).join('');
+  const groups = new Map();
+  for (const ex of EXERCISES) groups.set(ex.category, [...(groups.get(ex.category) ?? []), ex]);
+  const sel = $('songSelect');
+  const current = sel.value;
+  sel.innerHTML = `<optgroup label="Músicas">${songs}</optgroup>`
+    + [...groups].map(([category, list]) => `<optgroup label="Exercícios: ${escapeHtml(category)}">${list
+      .map((ex) => option(`ex:${ex.id}`, `${ex.titulo} · nível ${ex.nivel}`)).join('')}</optgroup>`).join('');
+  if (current) sel.value = current;
+}
+
+async function loadExercises() {
+  try {
+    const res = await fetch('songs/exercicios.json');
+    const data = await res.json();
+    // dentro de cada categoria, do nível mais fácil para o mais difícil
+    EXERCISES = data.categorias.flatMap((c) => c.exercicios
+      .map((ex) => ({ ...ex, category: c.nome, categoryId: c.id }))
+      .sort((a, b) => a.nivel - b.nivel));
+  } catch (err) {
+    console.warn('Não consegui carregar a lista de exercícios', err);
+  }
+  renderSongOptions();
+}
+
 $('songSelect').addEventListener('change', (e) => {
-  const song = SONGS[+e.target.value];
+  const value = e.target.value;
+  const ex = value.startsWith('ex:') && EXERCISES.find((x) => `ex:${x.id}` === value);
+  const song = ex ? { file: ex.arquivo, exercise: ex } : SONGS[+value];
   if (song) loadSong(song);
 });
 
@@ -139,8 +173,37 @@ async function loadSong(song) {
   const res = await fetch(song.file);
   state.fileName = song.file.split('/').pop();
   state.opening = null;
+  state.nextExercise = song.exercise ?? null;
   api.tex(await res.text(), [0]);
 }
+
+// Cartão do exercício aberto: objetivo, dica e a velocidade sugerida para começar.
+function renderExercise() {
+  const ex = state.exercise;
+  $('exercise').hidden = !ex;
+  if (!ex) return;
+  const tempo = state.score?.tempo;
+  $('exTitle').textContent = ex.titulo;
+  $('exMeta').textContent = `${ex.category} · nível ${ex.nivel}`;
+  $('exGoal').textContent = ex.objetivo;
+  $('exTip').textContent = ex.dica;
+  $('exSpeed').textContent = tempo
+    ? `Comece em ${Math.round((tempo * $('speed').value) / 100)} BPM (velocidade ajustada para ${$('speed').value}%). Quando sair limpo, suba aos poucos até ${tempo} BPM (100%), ou ligue o Desafio de velocidade.`
+    : '';
+  $('exTrain').hidden = ex.categoryId !== 'trocas';
+}
+
+function exerciseSpeed(ex, tempo) {
+  return Math.min(100, Math.max(25, Math.round((ex.bpm / tempo) * 20) * 5));
+}
+
+$('exNext').addEventListener('click', () => {
+  const i = EXERCISES.indexOf(state.exercise);
+  const next = EXERCISES[(i + 1) % EXERCISES.length];
+  $('songSelect').value = `ex:${next.id}`;
+  loadSong({ file: next.arquivo, exercise: next });
+});
+$('exTrain').addEventListener('click', () => $('openTrainer').click());
 
 // Arquivo aberto pelo botão ou arrastado: se já está na biblioteca, reabre a mesma entrada
 // (com faixa, velocidade e posição guardadas); se não, ela é criada quando a música carregar.
@@ -161,6 +224,7 @@ async function loadFile(file) {
 function openScore(entry, bytes, isNew) {
   state.fileName = entry.fileName;
   state.opening = { entry, bytes: isNew ? bytes : null };
+  state.nextExercise = null;
   if (/\.(atex|txt)$/i.test(entry.fileName)) api.tex(new TextDecoder().decode(bytes), [0]);
   else api.load(bytes, [0]);
   const sel = $('songSelect');
@@ -437,14 +501,18 @@ api.scoreLoaded.on((score) => {
   state.mix = score.tracks.map((_, i) => ({ volume: 1, muted: i !== first }));
   state.trackIndex = -1;
   selectTrack(first, first > 0);
-  if (saved?.speed) {
-    $('speed').value = Math.round(saved.speed * 100);
+  state.exercise = state.nextExercise ?? null;
+  state.nextExercise = null;
+  const speed = saved?.speed ?? (state.exercise && score.tempo ? exerciseSpeed(state.exercise, score.tempo) / 100 : null);
+  if (speed) {
+    $('speed').value = Math.round(speed * 100);
     api.playbackSpeed = +$('speed').value / 100;
   }
   // O tocador volta ao início quando recebe a MIDI desta música e ignoraria um tickPosition
   // enviado agora; a posição é aplicada quando ele avisar que voltou (playerPositionChanged).
   if (saved?.tick > 0) state.pendingSeek = { tick: saved.tick, until: performance.now() + 10000 };
   updateSpeedLabel();
+  renderExercise();
   if (opening) addToLibrary(score, opening);
 });
 
@@ -1137,4 +1205,6 @@ function toast(text) {
   toastTimer = setTimeout(() => { el.hidden = true; }, 3500);
 }
 
+renderSongOptions();
+loadExercises();
 loadSong(SONGS[0]);

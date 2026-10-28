@@ -1,0 +1,181 @@
+{
+  "categorias": [
+    {
+      "id": "trocas",
+      "nome": "Trocas de acordes",
+      "exercicios": [
+        {
+          "id": "troca-em-am",
+          "titulo": "Em ⇄ Am",
+          "arquivo": "songs/exercicios/troca-em-am.atex",
+          "nivel": 1,
+          "bpm": 60,
+          "objetivo": "Trocar entre Em e Am sem parar a batida.",
+          "dica": "É o mesmo desenho, uma corda abaixo: os dedos 2 e 3 descem juntos da Lá e Ré para a Ré e Sol, e o dedo 1 entra na 1ª casa da Si."
+        },
+        {
+          "id": "troca-g-em",
+          "titulo": "G ⇄ Em",
+          "arquivo": "songs/exercicios/troca-g-em.atex",
+          "nivel": 1,
+          "bpm": 60,
+          "objetivo": "Ir do G ao Em e voltar com os dedos chegando juntos.",
+          "dica": "No Em só ficam dois dedos (2ª casa da Lá e da Ré). Solte o G inteiro e pouse os dois dedos ao mesmo tempo, sem montar um por um."
+        },
+        {
+          "id": "troca-g-c",
+          "titulo": "G ⇄ C",
+          "arquivo": "songs/exercicios/troca-g-c.atex",
+          "nivel": 2,
+          "bpm": 60,
+          "objetivo": "Fazer a troca G ⇄ C a tempo, primeiro devagar e depois a cada dois tempos.",
+          "dica": "Comece a troca pelo dedo 3: no G ele está na Mi aguda e no C vai para a 3ª casa da Lá. Mova os três dedos juntos, como um bloco. No C, não toque a Mi grave."
+        },
+        {
+          "id": "troca-c-d",
+          "titulo": "C ⇄ D",
+          "arquivo": "songs/exercicios/troca-c-d.atex",
+          "nivel": 2,
+          "bpm": 60,
+          "objetivo": "Trocar C e D sem perder o primeiro tempo do compasso.",
+          "dica": "No D, toque só as 4 cordas finas (a palhetada começa na Ré). Pense no triângulo dos dedos 1, 2 e 3 e pouse-o inteiro de uma vez."
+        },
+        {
+          "id": "troca-d-a",
+          "titulo": "D ⇄ A",
+          "arquivo": "songs/exercicios/troca-d-a.atex",
+          "nivel": 2,
+          "bpm": 60,
+          "objetivo": "Trocar D e A mantendo o som limpo em todas as cordas.",
+          "dica": "No A os três dedos ficam lado a lado na 2ª casa; se não couberem, incline um pouco a mão. O D começa na corda Ré, o A na corda Lá."
+        }
+      ]
+    },
+    {
+      "id": "batidas",
+      "nome": "Batidas (ritmo)",
+      "exercicios": [
+        {
+          "id": "batida-para-baixo",
+          "titulo": "Só para baixo, em semínimas",
+          "arquivo": "songs/exercicios/batida-para-baixo.atex",
+          "nivel": 1,
+          "bpm": 72,
+          "objetivo": "Uma batida para baixo em cada tempo, sem atrasar na troca de acorde.",
+          "dica": "Conte \"1, 2, 3, 4\" em voz alta. Se a troca não der tempo, solte o acorde no 4 e toque as cordas soltas: o ritmo vale mais que o acorde perfeito."
+        },
+        {
+          "id": "batida-colcheias",
+          "titulo": "Colcheias ↓↑",
+          "arquivo": "songs/exercicios/batida-colcheias.atex",
+          "nivel": 1,
+          "bpm": 63,
+          "objetivo": "Batida constante para baixo nos tempos e para cima nos \"e\".",
+          "dica": "A mão é um pêndulo: desce no 1, sobe no \"e\", desce no 2… sem parar. Na subida, pegue só as cordas mais finas; não precisa acertar as seis."
+        },
+        {
+          "id": "batida-balada",
+          "titulo": "Balada ↓ ↓↑ ↓ ↓↑",
+          "arquivo": "songs/exercicios/batida-balada.atex",
+          "nivel": 2,
+          "bpm": 54,
+          "objetivo": "Uma batida calma de balada, misturando semínimas e colcheias.",
+          "dica": "Conte \"1, 2 e, 3, 4 e\". Depois do 1 e do 3 a mão sobe no ar, sem tocar, para descer de novo no tempo seguinte. Toque leve, deixando soar."
+        },
+        {
+          "id": "batida-pop",
+          "titulo": "Batida pop ↓ ↓↑ ↑↓↑",
+          "arquivo": "songs/exercicios/batida-pop.atex",
+          "nivel": 2,
+          "bpm": 70,
+          "objetivo": "A batida mais usada no pop e no violão de roda, com o \"buraco\" no tempo 3.",
+          "dica": "Conte \"1, 2 e, (3) e, 4 e\". No 3 a mão desce no ar, sem encostar nas cordas, e sobe no \"e\". Cada acorde dura dois compassos para você pegar o jeito."
+        },
+        {
+          "id": "batida-rock",
+          "titulo": "Rock: colcheias com acento e palm mute",
+          "arquivo": "songs/exercicios/batida-rock.atex",
+          "nivel": 3,
+          "bpm": 77,
+          "objetivo": "Colcheias abafadas com a mão direita e acentos abertos nos tempos 2 e 4.",
+          "dica": "Palm mute (P.M.): apoie a lateral da mão direita nas cordas, bem perto da ponte. Nos acentos (> no 2 e no 4) tire a mão e toque mais forte, deixando o acorde soar."
+        }
+      ]
+    },
+    {
+      "id": "power",
+      "nome": "Power chords",
+      "exercicios": [
+        {
+          "id": "power-primeiro",
+          "titulo": "Primeiro riff de power chord",
+          "arquivo": "songs/exercicios/power-primeiro.atex",
+          "nivel": 1,
+          "bpm": 70,
+          "objetivo": "Mover o mesmo desenho de power chord (E5, G5, A5) pela corda Mi grave.",
+          "dica": "Dedo 1 na Mi grave e dedo 3 duas casas adiante na Lá. Para mudar de acorde, deslize a mão inteira sem mudar o desenho. Toque só as duas cordas."
+        },
+        {
+          "id": "power-palm-mute",
+          "titulo": "Riff com palm mute",
+          "arquivo": "songs/exercicios/power-palm-mute.atex",
+          "nivel": 2,
+          "bpm": 77,
+          "objetivo": "Alternar o E5 abafado (P.M.) com acordes abertos, tudo para baixo.",
+          "dica": "Todas as palhetadas são para baixo, como no rock pesado. Abafe com a mão direita no E5 e solte nos outros acordes. Se cansar, baixe a velocidade."
+        },
+        {
+          "id": "power-contratempo",
+          "titulo": "Riff no contratempo",
+          "arquivo": "songs/exercicios/power-contratempo.atex",
+          "nivel": 3,
+          "bpm": 70,
+          "objetivo": "Tocar power chords que entram no \"e\" do tempo, com pausas no meio.",
+          "dica": "Nas pausas a mão continua o vai-e-vem sem tocar, e a mão esquerda alivia a pressão para calar o som. Os acordes no \"e\" saem com palhetada para cima."
+        }
+      ]
+    },
+    {
+      "id": "dedos",
+      "nome": "Dedos e notas soltas",
+      "exercicios": [
+        {
+          "id": "aranha",
+          "titulo": "Aranha 1-2-3-4",
+          "arquivo": "songs/exercicios/aranha.atex",
+          "nivel": 1,
+          "bpm": 60,
+          "objetivo": "Um dedo por casa (1 a 4) em todas as cordas, com palhetada alternada.",
+          "dica": "Indicador na 1ª casa, médio na 2ª, anelar na 3ª e mindinho na 4ª. Deixe cada dedo apoiado até precisar dele de novo. Devagar e limpo vale mais que rápido."
+        },
+        {
+          "id": "penta-mi-menor",
+          "titulo": "Pentatônica de Mi menor (aberta)",
+          "arquivo": "songs/exercicios/penta-mi-menor.atex",
+          "nivel": 1,
+          "bpm": 60,
+          "objetivo": "Subir e descer a escala pentatônica de Mi menor com cordas soltas.",
+          "dica": "Cada corda tem uma corda solta e uma nota presa: use o dedo 2 na 2ª casa e o dedo 3 na 3ª. Diga o nome das notas: Mi, Sol, Lá, Si, Ré."
+        },
+        {
+          "id": "penta-la-menor",
+          "titulo": "Pentatônica de Lá menor (5ª casa)",
+          "arquivo": "songs/exercicios/penta-la-menor.atex",
+          "nivel": 2,
+          "bpm": 63,
+          "objetivo": "Tocar o desenho mais usado da pentatônica, na 5ª casa, com palhetada alternada.",
+          "dica": "Dedo 1 fica na 5ª casa o tempo todo; a 7ª casa é do dedo 3 e a 8ª do mindinho. É o desenho de quase todo solo de rock e blues."
+        },
+        {
+          "id": "ode-a-alegria",
+          "titulo": "Ode à Alegria (Beethoven)",
+          "arquivo": "songs/exercicios/ode-a-alegria.atex",
+          "nivel": 2,
+          "bpm": 70,
+          "objetivo": "Tocar uma melodia conhecida nas três cordas mais finas.",
+          "dica": "Cante a melodia antes de tocar. Use o dedo 1 na 1ª casa e o dedo 3 na 3ª, nas cordas Mi e Si. Melodia de Beethoven (domínio público), arranjo do Palheta."
+        }
+      ]
+    }
+  ]
+}
